@@ -1,17 +1,19 @@
 #!/bin/sh
 
+# TODO - let the user pass flags to control what is built?
+
 ENVFILE="environment_setup.sh"
 
-PYTHIA8="yes"   # no means use Pythia6
+PYTHIA8="no"   # no means use Pythia6
 
 # should we build these packages?
-BUILD_HEPMC="no"
-BUILD_PYTHIA="no"
-BUILD_GSL="no"
-BUILD_ROOT="no"
-BUILD_LOG4CPP="no"
-BUILD_LHAPDF="no"
-GET_PDFS="no"     # for lhapdf
+BUILD_HEPMC="yes"
+BUILD_PYTHIA="yes"
+BUILD_GSL="yes"
+BUILD_ROOT="yes"
+BUILD_LOG4CPP="yes"
+BUILD_LHAPDF="yes"
+GET_PDFS="yes"     # for lhapdf
 PDFLIST="GRV98lo.LHgrid GRV98nlo.LHgrid"
 
 # what are the names of the code archives? we get ROOT
@@ -84,10 +86,7 @@ dobuild()
   echo "Building GENIE support libraries in $PWD. Linux time is $DAT..."
   mybr
 
-  # make the archive directory if it doesn't exist yet.
-  if [ ! -d archive ]; then
-    mkdir archive
-  fi
+  # get the archive directory path.
   mypush archive
   ARCHIVE=`pwd`
   echo "Saving source tarballs to $ARCHIVE"
@@ -123,7 +122,11 @@ dobuild()
     echo "Will build HepMC..."
   fi
   if [ "$BUILD_PYTHIA" == "yes" ]; then
-    echo "Will build Pythia..."
+    if [ "$PYTHIA8" == "yes" ]; then
+      echo "Will build Pythia8..."
+    else
+      echo "Will build Pythia6..."
+    fi
   fi
   if [ "$BUILD_GSL" == "yes" ]; then
     echo "Will build GSL..."
@@ -144,6 +147,7 @@ dobuild()
     NICE=""
   fi
 
+  # TODO - near future, take out HepMC. S. Mrenna says it is not required.
   HEPMCDIR=`basename ${HEPMCSRC} .tar.gz`
   HEPMCROOT=hepmc
   mybr
@@ -207,7 +211,29 @@ dobuild()
     echo "export PYTHIA8=$PYTHIALIBDIR" >> $ENVFILE
     mypop
   else
-    echo "source R. Hatcher's script here..."
+    PYTHIADIR=pythia6
+    mybr
+    if [ "$BUILD_PYTHIA" == "yes" ]; then
+      echo "Building ${PYTHIADIR} in $PWD..."
+      mymkarch $PYTHIADIR
+      mkdir $PYTHIADIR
+      pushd $PYTHIADIR
+      echo "Getting script in $PWD..."
+      mv ${ARCHIVE}/build_pythia6.sh .
+      echo "Running the script in $PWD..."
+      $NICE ./build_pythia6.sh
+      mv build_pythia6.sh $ARCHIVE
+      mypop
+      echo "Finished Pythia..."
+      mypop
+    else 
+      echo "Using pre-built Pythia6..."
+    fi
+    mypush $PYTHIADIR/v6_424/lib
+    PYTHIALIBDIR=`pwd`
+    echo "Pythia6 lib dir is $PYTHIALIBDIR..."
+    echo "export PYTHIA6=$PYTHIALIBDIR" >> $ENVFILE
+    mypop
   fi
 
   mybr
