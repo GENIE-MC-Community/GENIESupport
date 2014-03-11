@@ -23,8 +23,8 @@ HEPMCSRC=HepMC-2.06.08.tar.gz
 PYTHIASRC=pythia8183.tgz          # only if we use Pythia8.
 GSLSRC=gsl-1.16.tar.gz
 ROOTTAG="v5-34-08"
-LOG4CPPSRC="log4cpp-1.1.1.tar.gz"       
-LHAPDFSRC="lhapdf-5.9.1.tar.gz"
+LOG4CPPSRC=log4cpp-1.1.1.tar.gz       
+LHAPDFSRC=lhapdf-5.9.1.tar.gz
 
 # make under nice?
 MAKENICE="no"
