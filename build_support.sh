@@ -27,7 +27,7 @@ LOG4CPPSRC=log4cpp-1.1.1.tar.gz
 LHAPDFSRC=lhapdf-5.9.1.tar.gz
 
 # make under nice?
-MAKENICE="no"
+MAKENICE=0
 
 HELPFLAG=0
 FORCEBUILD=0   # non-zero will archive existing packages and rebuild
@@ -41,6 +41,7 @@ help()
   echo "Usage: ./build_support -<flag>"
   echo "                       -p(ythia) #: Build Pythia 6 or 8 and link ROOT to it (required)."
   echo "                       -r(oot) tag: Which ROOT version (default = v5-34-08)."
+  echo "                       -n(ice)    : Run configure, build, etc. under nice."
   echo " "
   echo "  Examples:  "
   echo "    ./build_supprt -p 6"
@@ -176,7 +177,7 @@ dobuild()
     echo "Will try to build LHAPDF..."
   fi
 
-  if [ "$MAKENICE" == "yes" ]; then
+  if [ $MAKENICE -ne 0 ]; then
     NICE=nice
   else 
     NICE=""
@@ -473,11 +474,12 @@ dobuild()
   mybr
 }
 
-while getopts "p:r:f" options; do
+while getopts "p:r:fn" options; do
   case $options in
     p) PYTHIAVER=$OPTARG;;
     r) ROOTTAG=$OPTARG;;
     f) FORCEBUILD=1;;
+    n) MAKENICE=1;;
   esac
 done
 
