@@ -4,12 +4,15 @@ hepmc
 log4cpp
 root
 pythia*
+environment_setup.sh
 
 .*.swp
 *~
 
-archive/HepMC-*.tar.gz
-archive/gsl-*.tar.gz
-archive/lhapdf-*tar.gz
-environment_setup.sh
+archive/*environment_setup*
+archive/*log4cpp*
+archive/*HepMC-*.tar.gz
+archive/*gsl-*.tar.gz
+archive/*lhapdf-*tar.gz
+
 
