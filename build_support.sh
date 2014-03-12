@@ -30,7 +30,7 @@ LHAPDFSRC=lhapdf-5.9.1.tar.gz
 # make under nice?
 MAKENICE="no"
 
-HELPFLAG=1
+HELPFLAG=0
 FORCEBUILD=0   # non-zero will archive existing packages and rebuild
 
 #-----------------------------------------------------
@@ -52,7 +52,11 @@ help()
 # quiet pushd
 mypush() 
 { 
-  pushd $1 >& /dev/null 
+  MYPUSHERR = pushd $1 >& /dev/null 
+  if [ $MYPUSHERR -ne 0 ]; then
+    echo "Error! Directory $1 does not exist."
+    exit 0
+  fi
 }
 
 # quiet popd
@@ -149,28 +153,28 @@ dobuild()
 
   mybr
   if [ "$BUILD_HEPMC" == "yes" ]; then
-    echo "Will build HepMC..."
+    echo "Will try to build HepMC..."
   fi
   if [ "$BUILD_PYTHIA" == "yes" ]; then
     if [ $PYTHIAVER -eq 8 ]; then
-      echo "Will build Pythia8..."
+      echo "Will try to build Pythia8..."
     elif [ $PYTHIAVER -eq 6 ]; then
-      echo "Will build Pythia6..."
+      echo "Will try to build Pythia6..."
     else
       badpythia
     fi
   fi
   if [ "$BUILD_GSL" == "yes" ]; then
-    echo "Will build GSL..."
+    echo "Will try to build GSL..."
   fi
   if [ "$BUILD_ROOT" == "yes" ]; then
-    echo "Will build ROOT..."
+    echo "Will try to build ROOT..."
   fi
   if [ "$BUILD_LOG4CPP" == "yes" ]; then
-    echo "Will build log4cpp..."
+    echo "Will try to build log4cpp..."
   fi
   if [ "$BUILD_LHAPDF" == "yes" ];  then
-    echo "Will build LHAPDF..."
+    echo "Will try to build LHAPDF..."
   fi
 
   if [ "$MAKENICE" == "yes" ]; then
@@ -470,13 +474,17 @@ done
 if [ $PYTHIAVER -eq -1 ]; then
   HELPFLAG=1
 fi
-if [ $PYTHIAVER -ne 6 -a $PYTHIAVER -ne 8 ]; then
-  badpythia
-fi
-
+echo "Helpflag is $HELPFLAG"
 if [ $HELPFLAG -ne 0 ]; then
   help
   exit 0
 fi
+mybr
+echo "Selected Pythia Version is $PYTHIAVER..."
+if [ $PYTHIAVER -ne 6 -a $PYTHIAVER -ne 8 ]; then
+  badpythia
+fi
+echo "Selected ROOT tag is $ROOTTAG..."
+
 
 dobuild
