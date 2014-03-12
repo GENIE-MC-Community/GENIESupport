@@ -5,6 +5,7 @@
 ENVFILE="environment_setup.sh"
 
 PYTHIA8="no"   # no means use Pythia6
+PYTHIAVER=-1
 
 # should we build these packages?
 BUILD_HEPMC="yes"
@@ -29,8 +30,24 @@ LHAPDFSRC=lhapdf-5.9.1.tar.gz
 # make under nice?
 MAKENICE="no"
 
+HELPFLAG=1
+FORCEBUILD=0   # non-zero will archive existing packages and rebuild
+
 #-----------------------------------------------------
 # Begin work...
+
+# how to use the script
+help()
+{
+  echo "Usage: ./build_support -<flag>"
+  echo "                       -p(ythia) #: Build Pythia 6 or 8 and link ROOT to it (required)."
+  echo "                       -r(oot) tag: Which ROOT version (default = v5-34-08)."
+  echo " "
+  echo "  Examples:  "
+  echo "    ./build_supprt -p 6"
+  echo "    ./build_supprt -p 8 -r v5-34-12"
+  echo " "
+}
 
 # quiet pushd
 mypush() 
@@ -54,11 +71,13 @@ mybr()
 mymkarch() 
 {
   if [ -d $1 ]; then
-    echo "Tarring old directory..."
-    mv $1 ${DAT}$1
-    tar -cvzf ${DAT}${1}.tgz ${DAT}${1} >& /dev/null
-    rm -rf ${DAT}${1}
-    mv ${DAT}$1 $ARCHIVE
+    if [ $FORCEBUILD -ne 0 ]; then
+      echo "Tarring old directory..."
+      mv $1 ${DAT}$1
+      tar -cvzf ${DAT}${1}.tgz ${DAT}${1} >& /dev/null
+      rm -rf ${DAT}${1}
+      mv ${DAT}$1 $ARCHIVE
+    fi
   fi
 }
 
@@ -75,6 +94,17 @@ getcode()
     tar -xvzf $1 >& /dev/null
     mv $1 $ARCHIVE
   fi
+}
+# bail on illegal versions of Pythia
+badpythia()
+{
+  echo "Illegal version of Pythia! Only 6 or 8 are accepted."
+  exit 0
+}
+#
+allreadybuilt()
+{
+  echo "$1 top directory present. Remove or run with force (-f) to rebuild."
 }
 
 # build the packages...
@@ -122,10 +152,12 @@ dobuild()
     echo "Will build HepMC..."
   fi
   if [ "$BUILD_PYTHIA" == "yes" ]; then
-    if [ "$PYTHIA8" == "yes" ]; then
+    if [ $PYTHIAVER -eq 8 ]; then
       echo "Will build Pythia8..."
-    else
+    elif [ $PYTHIAVER -eq 6 ]; then
       echo "Will build Pythia6..."
+    else
+      badpythia
     fi
   fi
   if [ "$BUILD_GSL" == "yes" ]; then
@@ -154,31 +186,35 @@ dobuild()
   if [ "$BUILD_HEPMC" == "yes" ]; then
     echo "Building ${HEPMCDIR} in $PWD..."
     mymkarch $HEPMCROOT
-    echo "Making installation directories for HepMC..."
-    mkdir ${HEPMCROOT}
-    mkdir ${HEPMCROOT}/build
-    mkdir ${HEPMCROOT}/install
-    mypush ${HEPMCROOT}
-    mypush install
-    HEPMCINST=`pwd`
-    echo "Target install directory is ${HEPMCINST}..."
-    mypop
-    echo "Getting source in $PWD..."
-    getcode $HEPMCSRC "http://lcgapp.cern.ch/project/simu/HepMC/download"
-    echo "Pushing to $HEPMCDIR..."
-    mypush ${HEPMCDIR} 
-    echo "Running autoreconf in $PWD..."
-    autoreconf -f -i
-    mypop
-    mypush build
-    echo "Running configure in $PWD..."
-    $NICE ../${HEPMCDIR}/configure --prefix=$HEPMCINST --with-momentum=GEV --with-length=CM >& log.config
-    echo "Running make in $PWD..."
-    $NICE make >& log.make
-    echo "Running make install in $PWD..."
-    $NICE make install >& log.install
-    mypop
-    echo "Finished HepMC..."
+    if [ ! -d $HEPMCROOT ]; then
+      echo "Making installation directories for HepMC..."
+      mkdir ${HEPMCROOT}
+      mkdir ${HEPMCROOT}/build
+      mkdir ${HEPMCROOT}/install
+      mypush ${HEPMCROOT}
+      mypush install
+      HEPMCINST=`pwd`
+      echo "Target install directory is ${HEPMCINST}..."
+      mypop
+      echo "Getting source in $PWD..."
+      getcode $HEPMCSRC "http://lcgapp.cern.ch/project/simu/HepMC/download"
+      echo "Pushing to $HEPMCDIR..."
+      mypush ${HEPMCDIR} 
+      echo "Running autoreconf in $PWD..."
+      autoreconf -f -i
+      mypop
+      mypush build
+      echo "Running configure in $PWD..."
+      $NICE ../${HEPMCDIR}/configure --prefix=$HEPMCINST --with-momentum=GEV --with-length=CM >& log.config
+      echo "Running make in $PWD..."
+      $NICE make >& log.make
+      echo "Running make install in $PWD..."
+      $NICE make install >& log.install
+      mypop
+      echo "Finished HepMC..."
+    else
+      allreadybuilt "HepMC"
+    fi
   else
     echo "Using pre-built HepMC..."
   fi
@@ -187,21 +223,25 @@ dobuild()
   echo "HepMC lib is $HEPMCLIB..."
   mypop
 
-  if [ "$PYTHIA8" == "yes" ]; then
+  if [ $PYTHIAVER -eq 8 ]; then
     PYTHIADIR=`basename ${PYTHIASRC} .tgz`
     mybr
     if [ "$BUILD_PYTHIA" == "yes" ]; then
       echo "Building ${PYTHIADIR} in $PWD..."
       mymkarch $PYTHIADIR
-      echo "Getting source in $PWD..."
-      getcode $PYTHIASRC "http://home.thep.lu.se/~torbjorn/pythia8"
-      mypush $PYTHIADIR
-      echo "Running configure in $PWD..."
-      $NICE ./configure --enable-debug --enable-shared >& log.config
-      echo "Running make in $PWD..."
-      $NICE gmake >& log.make
-      mypop
-      echo "Finished Pythia..."
+      if [ ! -d $PYTHIADIR ]; then
+        echo "Getting source in $PWD..."
+        getcode $PYTHIASRC "http://home.thep.lu.se/~torbjorn/pythia8"
+        mypush $PYTHIADIR
+        echo "Running configure in $PWD..."
+        $NICE ./configure --enable-debug --enable-shared >& log.config
+        echo "Running make in $PWD..."
+        $NICE gmake >& log.make
+        mypop
+        echo "Finished Pythia..."
+      else
+        allreadybuilt "Pythia"
+      fi
     else 
       echo "Using pre-built Pythia8..."
     fi
@@ -210,22 +250,26 @@ dobuild()
     echo "Pythia8 lib dir is $PYTHIALIBDIR..."
     echo "export PYTHIA8=$PYTHIALIBDIR" >> $ENVFILE
     mypop
-  else
+  elif [ $PYTHIAVER -eq 6 ]; then
     PYTHIADIR=pythia6
     mybr
     if [ "$BUILD_PYTHIA" == "yes" ]; then
       echo "Building ${PYTHIADIR} in $PWD..."
       mymkarch $PYTHIADIR
-      mkdir $PYTHIADIR
-      pushd $PYTHIADIR
-      echo "Getting script in $PWD..."
-      mv ${ARCHIVE}/build_pythia6.sh .
-      echo "Running the script in $PWD..."
-      $NICE ./build_pythia6.sh
-      mv build_pythia6.sh $ARCHIVE
-      mypop
-      echo "Finished Pythia..."
-      mypop
+      if [ ! -d $PYTHIADIR ]; then
+        mkdir $PYTHIADIR
+        pushd $PYTHIADIR
+        echo "Getting script in $PWD..."
+        mv ${ARCHIVE}/build_pythia6.sh .
+        echo "Running the script in $PWD..."
+        $NICE ./build_pythia6.sh
+        mv build_pythia6.sh $ARCHIVE
+        mypop
+        echo "Finished Pythia..."
+        mypop
+      else
+        allreadybuilt "Pythia"
+      fi
     else 
       echo "Using pre-built Pythia6..."
     fi
@@ -234,30 +278,36 @@ dobuild()
     echo "Pythia6 lib dir is $PYTHIALIBDIR..."
     echo "export PYTHIA6=$PYTHIALIBDIR" >> $ENVFILE
     mypop
+  else 
+    badpythia
   fi
 
   mybr
   GSLDIR=`basename ${GSLSRC} .tar.gz`
   if [ "$BUILD_GSL" == "yes" ]; then
     mymkarch gsl
-    mkdir gsl
-    mypush gsl
-    echo "Building $GSLDIR in $PWD..."
-    echo "Getting source in $PWD..."
-    getcode $GSLSRC "http://ftpmirror.gnu.org/gsl"
-    GSLINST=`pwd`
-    mypush $GSLDIR
-    echo "Running configure in $PWD..."
-    $NICE ./configure --prefix=$GSLINST >& log.config
-    echo "Running make in $PWD..."
-    $NICE make >& log.make
-    echo "Running make check in $PWD..."
-    $NICE make check >& log.check
-    echo "Running make install in $PWD..."
-    $NICE make install >& log.install
-    mypop
-    echo "Finished GSL..."
-    mypop
+    if [ ! -d gsl ]; then
+      mkdir gsl
+      mypush gsl
+      echo "Building $GSLDIR in $PWD..."
+      echo "Getting source in $PWD..."
+      getcode $GSLSRC "http://ftpmirror.gnu.org/gsl"
+      GSLINST=`pwd`
+      mypush $GSLDIR
+      echo "Running configure in $PWD..."
+      $NICE ./configure --prefix=$GSLINST >& log.config
+      echo "Running make in $PWD..."
+      $NICE make >& log.make
+      echo "Running make check in $PWD..."
+      $NICE make check >& log.check
+      echo "Running make install in $PWD..."
+      $NICE make install >& log.install
+      mypop
+      echo "Finished GSL..."
+      mypop
+    else
+      allreadybuilt "GSL"
+    fi
   else
     echo "Using pre-built GSL..."
   fi
@@ -273,30 +323,34 @@ dobuild()
   mybr
   if [ "$BUILD_ROOT" == "yes" ]; then
     mymkarch root
-    echo "Building ROOT $ROOTTAG in $PWD..."
-    if [ -f $ARCHIVE/root.tgz ]; then
-      echo "Retrieving code from archive..."
-      echo " We will not be adjusting the tag!"
-      mv $ARCHIVE/root.tgz .
-      tar -xvzf $1 >& /dev/null
-      mv root.tgz $ARCHIVE
-      mypush root
+    if [ ! -d root ]; then
+      echo "Building ROOT $ROOTTAG in $PWD..."
+      if [ -f $ARCHIVE/root.tgz ]; then
+        echo "Retrieving code from archive..."
+        echo " We will not be adjusting the tag!"
+        mv $ARCHIVE/root.tgz .
+        tar -xvzf $1 >& /dev/null
+        mv root.tgz $ARCHIVE
+        mypush root
+      else
+        echo "Downloading code from the internet..."
+        git clone http://root.cern.ch/git/root.git
+        mypush root
+        echo "Checking out tag $ROOTTAG..."
+        git checkout -b ${ROOTTAG} ${ROOTTAG}
+      fi
+      echo "Configuring in $PWD..."
+      $NICE ./configure linuxx8664gcc --build=debug --enable-pythia8 \
+      --with-pythia8-libdir=$PYTHIALIBDIR --enable-gsl-shared \
+      --enable-mathmore --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB >& log.config
+      echo "Running make in $PWD..."
+      nice make >& log.make
+      echo "Finished ROOT..."
+      ROOTSYS=`pwd`
+      mypop
     else
-      echo "Downloading code from the internet..."
-      git clone http://root.cern.ch/git/root.git
-      mypush root
-      echo "Checking out tag $ROOTTAG..."
-      git checkout -b ${ROOTTAG} ${ROOTTAG}
+      allreadybuilt "ROOT"
     fi
-    echo "Configuring in $PWD..."
-    $NICE ./configure linuxx8664gcc --build=debug --enable-pythia8 \
-    --with-pythia8-libdir=$PYTHIALIBDIR --enable-gsl-shared \
-    --enable-mathmore --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB >& log.config
-    echo "Running make in $PWD..."
-    nice make >& log.make
-    echo "Finished ROOT..."
-    ROOTSYS=`pwd`
-    mypop
   else
     echo "Using pre-built ROOT..."
   fi
@@ -306,27 +360,31 @@ dobuild()
   mybr
   if [ "$BUILD_LOG4CPP" == "yes" ]; then
     mymkarch $LOG4CPPDIR
-    if [ -f $ARCHIVE/$LOG4CPPSRC ]; then
-      echo "Retrieving code from archive..."
-      mv $ARCHIVE/$LOG4CPPSRC .
-      tar -xvzf $LOG4CPPSRC >& /dev/null 
-      mv $LOG4CPPSRC $ARCHIVE
-      mypush $LOG4CPPDIR
+    if [ ! -d $LOG4CPPDIR ]; then
+      if [ -f $ARCHIVE/$LOG4CPPSRC ]; then
+        echo "Retrieving code from archive..."
+        mv $ARCHIVE/$LOG4CPPSRC .
+        tar -xvzf $LOG4CPPSRC >& /dev/null 
+        mv $LOG4CPPSRC $ARCHIVE
+        mypush $LOG4CPPDIR
+      else
+        echo "Using the log4cpp code present here..."
+        tar -xvzf $LOG4CPPSRC >& /dev/null 
+        echo "Archiving the log4cpp tarball. Look for it in $ARCHIVE..."
+        mv $LOG4CPPSRC $ARCHIVE
+        mypush $LOG4CPPDIR
+      fi
+      echo "Running autogen in $PWD..."
+      $NICE ./autogen.sh >& log.config
+      echo "Running make in $PWD..."
+      $NICE gmake >& log.make
+      echo "Running make install in $PWD..."
+      $NICE gmake install >& log.install
+      echo "Finished log4cpp..."
+      mypop
     else
-      echo "Using the log4cpp code present here..."
-      tar -xvzf $LOG4CPPSRC >& /dev/null 
-      echo "Archiving the log4cpp tarball. Look for it in $ARCHIVE..."
-      mv $LOG4CPPSRC $ARCHIVE
-      mypush $LOG4CPPDIR
+      allreadybuilt "log4cpp"
     fi
-    echo "Running autogen in $PWD..."
-    $NICE ./autogen.sh >& log.config
-    echo "Running make in $PWD..."
-    $NICE gmake >& log.make
-    echo "Running make install in $PWD..."
-    $NICE gmake install >& log.install
-    echo "Finished log4cpp..."
-    mypop
   else
     echo "Using pre-built log4cpp..."
   fi
@@ -346,22 +404,26 @@ dobuild()
   mybr
   if [ "$BUILD_LHAPDF" == "yes" ]; then
     mymkarch $LHAPDFROOT
-    echo "Making installation directories for LHAPDF..."
-    mkdir $LHAPDFROOT
-    mypush $LHAPDFROOT
-    echo "Building ${LHAPDF} in $PWD..."
-    LHAINST=`pwd`
-    echo "LHAPDF install directory is $LHAINST..."
-    getcode $LHAPDFSRC "http://www.hepforge.org/archive/lhapdf"
-    mypush $LHAPDFDIR
-    echo "Running configure in $PWD..."
-    $NICE ./configure --prefix=$LHAINST >& log.config
-    echo "Running make in $PWD..."
-    $NICE gmake >& log.make
-    echo "Running make install in $PWD..."
-    $NICE gmake install >& log.install
-    mypop
-    echo "Finished building LHAPDF..."
+    if [ ! -d $LHAPDFROOT ]; then
+      echo "Making installation directories for LHAPDF..."
+      mkdir $LHAPDFROOT
+      mypush $LHAPDFROOT
+      echo "Building ${LHAPDF} in $PWD..."
+      LHAINST=`pwd`
+      echo "LHAPDF install directory is $LHAINST..."
+      getcode $LHAPDFSRC "http://www.hepforge.org/archive/lhapdf"
+      mypush $LHAPDFDIR
+      echo "Running configure in $PWD..."
+      $NICE ./configure --prefix=$LHAINST >& log.config
+      echo "Running make in $PWD..."
+      $NICE gmake >& log.make
+      echo "Running make install in $PWD..."
+      $NICE gmake install >& log.install
+      mypop
+      echo "Finished building LHAPDF..."
+    else
+      allreadybuilt "LHAPDF"
+    fi
   else
     echo "Using pre-built LHAPDF..."
   fi
@@ -381,8 +443,12 @@ dobuild()
     mypush $LHAPDFROOT/bin
     for pdf in $PDFLIST
     do
-      echo "...Getting $pdf..."
-      $NICE ./lhapdf-getdata $pdf --dest=$LHAPDFROOT
+      if [ ! -f $pdf ]; then
+        echo "...Getting $pdf..."
+        $NICE ./lhapdf-getdata $pdf --dest=$LHAPDFROOT
+      else
+        echo "$pdf is already present..."
+      fi
     done
     mypop
     echo "Finished getting PDFs..."
@@ -392,5 +458,25 @@ dobuild()
   echo "Done!"
   mybr
 }
+
+while getopts "p:r:f" options; do
+  case $options in
+    p) PYTHIAVER=$OPTARG;;
+    r) ROOTTAG=$OPTARG;;
+    f) FORCEBUILD=1;;
+  esac
+done
+
+if [ $PYTHIAVER -eq -1 ]; then
+  HELPFLAG=1
+fi
+if [ $PYTHIAVER -ne 6 -a $PYTHIAVER -ne 8 ]; then
+  badpythia
+fi
+
+if [ $HELPFLAG -ne 0 ]; then
+  help
+  exit 0
+fi
 
 dobuild
