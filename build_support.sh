@@ -4,7 +4,6 @@
 
 ENVFILE="environment_setup.sh"
 
-PYTHIA8="no"   # no means use Pythia6
 PYTHIAVER=-1
 
 # should we build these packages?
@@ -52,8 +51,8 @@ help()
 # quiet pushd
 mypush() 
 { 
-  MYPUSHERR = pushd $1 >& /dev/null 
-  if [ $MYPUSHERR -ne 0 ]; then
+  pushd $1 >& /dev/null 
+  if [ $? -ne 0 ]; then
     echo "Error! Directory $1 does not exist."
     exit 0
   fi
@@ -80,7 +79,7 @@ mymkarch()
       mv $1 ${DAT}$1
       tar -cvzf ${DAT}${1}.tgz ${DAT}${1} >& /dev/null
       rm -rf ${DAT}${1}
-      mv ${DAT}$1 $ARCHIVE
+      mv ${DAT}$1.tgz $ARCHIVE
     fi
   fi
 }
@@ -266,7 +265,7 @@ dobuild()
         echo "Getting script in $PWD..."
         mv ${ARCHIVE}/build_pythia6.sh .
         echo "Running the script in $PWD..."
-        $NICE ./build_pythia6.sh
+        $NICE ./build_pythia6.sh >& log.pythia6
         mv build_pythia6.sh $ARCHIVE
         mypop
         echo "Finished Pythia..."
@@ -344,8 +343,8 @@ dobuild()
         git checkout -b ${ROOTTAG} ${ROOTTAG}
       fi
       echo "Configuring in $PWD..."
-      $NICE ./configure linuxx8664gcc --build=debug --enable-pythia8 \
-      --with-pythia8-libdir=$PYTHIALIBDIR --enable-gsl-shared \
+      $NICE ./configure linuxx8664gcc --build=debug --enable-pythia${PYTHIAVER} \
+      --with-pythia${PYTHIAVER}-libdir=$PYTHIALIBDIR --enable-gsl-shared \
       --enable-mathmore --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB >& log.config
       echo "Running make in $PWD..."
       nice make >& log.make
@@ -365,6 +364,7 @@ dobuild()
   if [ "$BUILD_LOG4CPP" == "yes" ]; then
     mymkarch $LOG4CPPDIR
     if [ ! -d $LOG4CPPDIR ]; then
+      echo "Building log4cpp in $PWD..."
       if [ -f $ARCHIVE/$LOG4CPPSRC ]; then
         echo "Retrieving code from archive..."
         mv $ARCHIVE/$LOG4CPPSRC .
@@ -379,7 +379,9 @@ dobuild()
         mypush $LOG4CPPDIR
       fi
       echo "Running autogen in $PWD..."
-      $NICE ./autogen.sh >& log.config
+      $NICE ./autogen.sh >& log.autogen
+      echo "Running configure in $PWD..."
+      $NICE ./configure --prefix=`pwd` >& log.config
       echo "Running make in $PWD..."
       $NICE gmake >& log.make
       echo "Running make install in $PWD..."
@@ -431,6 +433,9 @@ dobuild()
   else
     echo "Using pre-built LHAPDF..."
   fi
+  mypush $LHAPDFROOT
+  LHAPATH=`pwd`
+  mypop
   mypush $LHAPDFROOT/lib
   LHAPDF_LIB=`pwd`
   mypop
@@ -439,7 +444,7 @@ dobuild()
   mypop
   echo "LHAPDF lib is $LHAPDF_LIB..."
   echo "LHAPDF inc is $LHAPDF_INC..."
-  echo "export LHAPATH=$LHAPDFROOT" >> $ENVFILE
+  echo "export LHAPATH=$LHAPATH" >> $ENVFILE
   echo "export LHAPDF_INC=$LHAPDF_INC" >> $ENVFILE
   echo "export LHAPDF_LIB=$LHAPDF_LIB" >> $ENVFILE
   if [ "$GET_PDFS" == "yes" ]; then
@@ -449,13 +454,18 @@ dobuild()
     do
       if [ ! -f $pdf ]; then
         echo "...Getting $pdf..."
-        $NICE ./lhapdf-getdata $pdf --dest=$LHAPDFROOT
+        $NICE ./lhapdf-getdata $pdf --dest=$LHAPATH
       else
         echo "$pdf is already present..."
       fi
     done
     mypop
     echo "Finished getting PDFs..."
+  else
+    mypush $LHAPDFROOT/bin
+    echo "PDF sets present: "
+    ls *.*
+    mypop
   fi
 
   mybr
