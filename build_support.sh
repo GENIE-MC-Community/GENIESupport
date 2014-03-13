@@ -6,7 +6,6 @@ PDFLIST="GRV98lo.LHgrid GRV98nlo.LHgrid"
 # what are the names of the code archives? we get ROOT
 # from CERN's Git repos. log4cpp is "special" because
 # we can't curl it (I think - maybe someone can).
-HEPMCSRC=HepMC-2.06.08.tar.gz
 PYTHIASRC=pythia8183.tgz          # only if we use Pythia8.
 GSLSRC=gsl-1.16.tar.gz
 ROOTTAG="v5-34-08"
@@ -22,7 +21,6 @@ FORCEBUILD=0         # non-zero will archive existing packages and rebuild
 PYTHIAVER=-1         # must eventually be either 6 or 8
 
 # should we build these packages? - testing variables
-BUILD_HEPMC="yes"
 BUILD_PYTHIA="yes"
 BUILD_GSL="yes"
 BUILD_ROOT="yes"
@@ -153,9 +151,6 @@ dobuild()
   fi
 
   mybr
-  if [ "$BUILD_HEPMC" == "yes" ]; then
-    echo "Will try to build HepMC..."
-  fi
   if [ "$BUILD_PYTHIA" == "yes" ]; then
     if [ $PYTHIAVER -eq 8 ]; then
       echo "Will try to build Pythia8..."
@@ -183,51 +178,6 @@ dobuild()
   else 
     NICE=""
   fi
-
-  # TODO - near future, take out HepMC. S. Mrenna says it is not required.
-  HEPMCDIR=`basename ${HEPMCSRC} .tar.gz`
-  HEPMCROOT=hepmc
-  mybr
-  if [ "$BUILD_HEPMC" == "yes" ]; then
-    echo "Building ${HEPMCDIR} in $PWD..."
-    mymkarch $HEPMCROOT
-    if [ ! -d $HEPMCROOT ]; then
-      echo "Making installation directories for HepMC..."
-      mkdir ${HEPMCROOT}
-      mkdir ${HEPMCROOT}/build
-      mkdir ${HEPMCROOT}/install
-      mypush ${HEPMCROOT}
-      mypush install
-      HEPMCINST=`pwd`
-      echo "Target install directory is ${HEPMCINST}..."
-      mypop
-      echo "Getting source in $PWD..."
-      getcode $HEPMCSRC "http://lcgapp.cern.ch/project/simu/HepMC/download"
-      echo "Pushing to $HEPMCDIR..."
-      mypush ${HEPMCDIR} 
-      echo "Running autoreconf in $PWD..."
-      autoreconf -f -i
-      mypop
-      mypush build
-      echo "Running configure in $PWD..."
-      $NICE ../${HEPMCDIR}/configure --prefix=$HEPMCINST --with-momentum=GEV --with-length=CM >& log.config
-      echo "Running make in $PWD..."
-      $NICE make >& log.make
-      echo "Running make install in $PWD..."
-      $NICE make install >& log.install
-      mypop
-      mypop
-      echo "Finished HepMC..."
-    else
-      allreadybuilt "HepMC"
-    fi
-  else
-    echo "Using pre-built HepMC..."
-  fi
-  mypush $HEPMCROOT/install/lib 
-  HEPMCLIB=`pwd`
-  echo "HepMC lib is $HEPMCLIB..."
-  mypop
 
   if [ $PYTHIAVER -eq 8 ]; then
     PYTHIADIR=`basename ${PYTHIASRC} .tgz`
