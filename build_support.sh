@@ -215,6 +215,7 @@ dobuild()
       echo "Running make install in $PWD..."
       $NICE make install >& log.install
       mypop
+      mypop
       echo "Finished HepMC..."
     else
       allreadybuilt "HepMC"
@@ -350,7 +351,6 @@ dobuild()
       echo "Running make in $PWD..."
       nice make >& log.make
       echo "Finished ROOT..."
-      ROOTSYS=`pwd`
       mypop
     else
       allreadybuilt "ROOT"
@@ -358,6 +358,10 @@ dobuild()
   else
     echo "Using pre-built ROOT..."
   fi
+  mypush root
+  ROOTSYS=`pwd`
+  echo "ROOTSYS is $ROOTSYS..."
+  mypop
   echo "export ROOTSYS=$ROOTSYS" >> $ENVFILE
 
   LOG4CPPDIR="log4cpp"
@@ -427,6 +431,7 @@ dobuild()
       echo "Running make install in $PWD..."
       $NICE gmake install >& log.install
       mypop
+      mypop
       echo "Finished building LHAPDF..."
     else
       allreadybuilt "LHAPDF"
@@ -453,7 +458,7 @@ dobuild()
     mypush $LHAPDFROOT/bin
     for pdf in $PDFLIST
     do
-      if [ ! -f $pdf ]; then
+      if [ ! -f $LHAPATH/$pdf ]; then
         echo "...Getting $pdf..."
         $NICE ./lhapdf-getdata $pdf --dest=$LHAPATH
       else
@@ -486,7 +491,6 @@ done
 if [ $PYTHIAVER -eq -1 ]; then
   HELPFLAG=1
 fi
-echo "Helpflag is $HELPFLAG"
 if [ $HELPFLAG -ne 0 ]; then
   help
   exit 0
