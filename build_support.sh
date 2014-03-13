@@ -1,10 +1,14 @@
 #!/bin/sh
 
-# TODO - let the user pass flags to control what is built?
-
 ENVFILE="environment_setup.sh"
 
-PYTHIAVER=-1
+MAKENICE=0     # make under nice?
+HELPFLAG=0     # show the help block (if non-zero)
+FORCEBUILD=0   # non-zero will archive existing packages and rebuild
+PYTHIAVER=-1   # must eventually be either 6 or 8
+
+# Users need to edit this list by hand...
+PDFLIST="GRV98lo.LHgrid GRV98nlo.LHgrid"
 
 # should we build these packages?
 BUILD_HEPMC="yes"
@@ -14,7 +18,6 @@ BUILD_ROOT="yes"
 BUILD_LOG4CPP="yes"
 BUILD_LHAPDF="yes"
 GET_PDFS="yes"     # for lhapdf
-PDFLIST="GRV98lo.LHgrid GRV98nlo.LHgrid"
 
 # what are the names of the code archives? we get ROOT
 # from CERN's Git repos. log4cpp is "special" because
@@ -26,11 +29,6 @@ ROOTTAG="v5-34-08"
 LOG4CPPSRC=log4cpp-1.1.1.tar.gz       
 LHAPDFSRC=lhapdf-5.9.1.tar.gz
 
-# make under nice?
-MAKENICE=0
-
-HELPFLAG=0
-FORCEBUILD=0   # non-zero will archive existing packages and rebuild
 
 #-----------------------------------------------------
 # Begin work...
