@@ -36,6 +36,7 @@ LHAPDFSRC=lhapdf-5.9.1.tar.gz
 # how to use the script
 help()
 {
+  mybr
   echo "Usage: ./build_support -<flag>"
   echo "                       -p(ythia) #: Build Pythia 6 or 8 and link ROOT to it (required)."
   echo "                       -r(oot) tag: Which ROOT version (default = v5-34-08)."
@@ -44,6 +45,7 @@ help()
   echo "  Examples:  "
   echo "    ./build_supprt -p 6"
   echo "    ./build_supprt -p 8 -r v5-34-12"
+  mybr
   echo " "
 }
 
