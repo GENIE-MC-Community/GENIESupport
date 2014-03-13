@@ -129,8 +129,8 @@ dobuild()
   if [ -f $ENVFILE ]; then
     mv $ENVFILE ${DAT}$ENVFILE
     mv ${DAT}$ENVFILE $ARCHIVE
-    echo -e "\043\041/bin/sh" > $ENVFILE
   fi
+  echo -e "\043\041/bin/sh" > $ENVFILE
 
   GIT=`which git`
   if [ "$GIT" == "" ]; then
@@ -231,10 +231,10 @@ dobuild()
     fi
     mypush $PYTHIADIR/v6_424/lib
     PYTHIALIBDIR=`pwd`
+    mypop
     echo "Pythia6 lib dir is $PYTHIALIBDIR..."
     echo "export PYTHIA6=$PYTHIALIBDIR" >> $ENVFILE
     echo "export LD_LIBRARY_PATH=${PYTHIALIBDIR}:\$LD_LIBRARY_PATH" >> $ENVFILE
-    mypop
   else 
     badpythia
   fi
