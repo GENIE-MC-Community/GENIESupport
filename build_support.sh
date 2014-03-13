@@ -233,6 +233,7 @@ dobuild()
     PYTHIALIBDIR=`pwd`
     echo "Pythia6 lib dir is $PYTHIALIBDIR..."
     echo "export PYTHIA6=$PYTHIALIBDIR" >> $ENVFILE
+    echo "export LD_LIBRARY_PATH=${PYTHIALIBDIR}:\$LD_LIBRARY_PATH" >> $ENVFILE
     mypop
   else 
     badpythia
@@ -314,6 +315,8 @@ dobuild()
   echo "ROOTSYS is $ROOTSYS..."
   mypop
   echo "export ROOTSYS=$ROOTSYS" >> $ENVFILE
+  echo "export PATH=${ROOTSYS}/bin:\$PATH" >> $ENVFILE
+  echo "export LD_LIBRARY_PATH=${ROOTSYS}/lib:\$LD_LIBRARY_PATH" >> $ENVFILE
 
   LOG4CPPDIR="log4cpp"
   mybr
@@ -360,6 +363,7 @@ dobuild()
   echo "log4cpp inc dir is $LOG4CPP_INC..."
   echo "export LOG4CPP_INC=$LOG4CPP_INC" >> $ENVFILE
   echo "export LOG4CPP_LIB=$LOG4CPP_LIB" >> $ENVFILE
+  echo "export LD_LIBRARY_PATH=${LOG4CPP_LIB}:\$LD_LIBRARY_PATH" >> $ENVFILE
 
   LHAPDFDIR=`basename ${LHAPDFSRC} .tar.gz`
   LHAPDFROOT=lhapdf
@@ -404,6 +408,7 @@ dobuild()
   echo "export LHAPATH=$LHAPATH" >> $ENVFILE
   echo "export LHAPDF_INC=$LHAPDF_INC" >> $ENVFILE
   echo "export LHAPDF_LIB=$LHAPDF_LIB" >> $ENVFILE
+  echo "export LD_LIBRARY_PATH=${LHAPDF_LIB}:\$LD_LIBRARY_PATH" >> $ENVFILE
   if [ "$GET_PDFS" == "yes" ]; then
     echo "Getting PDFs..."
     mypush $LHAPDFROOT/bin
