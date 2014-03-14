@@ -8,7 +8,7 @@ PDFLIST="GRV98lo.LHgrid GRV98nlo.LHgrid"
 # we can't curl it (I think - maybe someone can).
 PYTHIASRC=pythia8183.tgz          # only if we use Pythia8.
 GSLSRC=gsl-1.16.tar.gz
-ROOTTAG="v5-34-08"
+ROOTTAG="v5-34-17"
 LOG4CPPSRC=log4cpp-1.1.1.tar.gz       
 LHAPDFSRC=lhapdf-5.9.1.tar.gz
 
@@ -38,12 +38,12 @@ help()
   mybr
   echo "Usage: ./build_support -<flag>"
   echo "                       -p  #  : Build Pythia 6 or 8 and link ROOT to it (required)."
-  echo "                       -r tag : Which ROOT version (default = v5-34-08)."
+  echo "                       -r tag : Which ROOT version (default = v5-34-17)."
   echo "                       -n     : Run configure, build, etc. under nice."
   echo " "
   echo "  Examples:  "
   echo "    ./build_supprt -p 6"
-  echo "    ./build_supprt -p 8 -r v5-34-12"
+  echo "    ./build_supprt -p 8 -r v5-34-18"
   mybr
   echo " "
 }
@@ -204,8 +204,15 @@ dobuild()
     mypush $PYTHIADIR/lib
     PYTHIALIBDIR=`pwd`
     mypop
+    mypush $PYTHIADIR/include
+    PYTHIAINCDIR=`pwd`
+    mypop
+    mypush $PYTHIADIR/xmldoc
+    PYTHIA8DATA=`pwd`
+    mypop
     echo "Pythia8 lib dir is $PYTHIALIBDIR..."
     echo "export PYTHIA8=$PYTHIALIBDIR" >> $ENVFILE
+    echo "export PYTHIA8DATA=$PYTHIA8DATA" >> $ENVFILE
     echo "export LD_LIBRARY_PATH=${PYTHIALIBDIR}:\$LD_LIBRARY_PATH" >> $ENVFILE
   elif [ $PYTHIAVER -eq 6 ]; then
     PYTHIADIR=pythia6
@@ -298,9 +305,15 @@ dobuild()
         git checkout -b ${ROOTTAG} ${ROOTTAG}
       fi
       echo "Configuring in $PWD..."
-      $NICE ./configure linuxx8664gcc --build=debug --enable-pythia${PYTHIAVER} \
-      --with-pythia${PYTHIAVER}-libdir=$PYTHIALIBDIR --enable-gsl-shared \
-      --enable-mathmore --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB >& log.config
+      PYTHIASTRING=""
+      if [ $PYTHIAVER -eq 6 ]; then
+        PYTHIASTRING="--enable-pythia6 --with-pythia6-libdir=$PYTHIALIBDIR"
+      elif [ $PYTHIAVER -eq 8 ]; then
+        PYTHIASTRING="--enable-pythia8 --with-pythia8-libdir=$PYTHIALIBDIR --with-pythia8-incdir=$PYTHIAINCDIR"
+      else
+        badpythia
+      fi
+      $NICE ./configure linuxx8664gcc --build=debug $PYTHIASTRING --enable-gsl-shared --enable-mathmore --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB >& log.config
       echo "Running make in $PWD..."
       nice make >& log.make
       echo "Finished ROOT..."
