@@ -203,9 +203,10 @@ dobuild()
     fi
     mypush $PYTHIADIR/lib
     PYTHIALIBDIR=`pwd`
+    mypop
     echo "Pythia8 lib dir is $PYTHIALIBDIR..."
     echo "export PYTHIA8=$PYTHIALIBDIR" >> $ENVFILE
-    mypop
+    echo "export LD_LIBRARY_PATH=${PYTHIALIBDIR}:\$LD_LIBRARY_PATH" >> $ENVFILE
   elif [ $PYTHIAVER -eq 6 ]; then
     PYTHIADIR=pythia6
     mybr
