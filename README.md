@@ -1,3 +1,5 @@
+#Basic Usage
+
 This script will install the required third party packages to build GENIE 
 from source. It has been lightly test on Scientific Linux 5 only.
 
@@ -11,4 +13,13 @@ Running the script with no arguments will produce the help menu:
       Examples:  
         ./build_supprt -p 6
         ./build_supprt -p 8 -r v5-34-12
+
+#Trouble-Shooting
+
+This is a bash script, so some errors will likely occur under different
+shells. If you get errors, make sure `/bin/bash` exists and is not a 
+link to a different executable.
+
+If there is a strong desire for a c-shell or some other version of this 
+script, we welcome a translation!
 

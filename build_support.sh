@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Users need to edit this list by hand...
 PDFLIST="GRV98lo.LHgrid GRV98nlo.LHgrid"
