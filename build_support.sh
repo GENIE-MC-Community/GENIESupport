@@ -130,7 +130,7 @@ dobuild()
     mv $ENVFILE ${DAT}$ENVFILE
     mv ${DAT}$ENVFILE $ARCHIVE
   fi
-  echo -e "\043\041/bin/sh" > $ENVFILE
+  echo -e "\043\041/bin/bash" > $ENVFILE
 
   GIT=`which git`
   if [ "$GIT" == "" ]; then
