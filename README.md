@@ -9,6 +9,7 @@ Running the script with no arguments will produce the help menu:
                            -p  #  : Build Pythia 6 or 8 and link ROOT to it (required).
                            -r tag : Which ROOT version (default = v5-34-08).
                            -n     : Run configure, build, etc. under nice.
+                           -m     : Build using "make" instead of "gmake".
      
       Examples:  
         ./build_supprt -p 6
@@ -33,7 +34,6 @@ install them with a package manager:
 * etc.
 
 It is possible that there is a problem with `make` vs. `gmake` on your 
-system. For now, edit the script and replace the `MAKE=blah` line near
-the top with the appropriate command (a command line options is coming
-perhaps).
-
+system. If you find cryptic error messages associated with libtool and 
+autoconf while attempting to build log4cpp, you may chose to try make
+in place of gmake.
