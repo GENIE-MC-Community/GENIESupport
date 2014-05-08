@@ -31,3 +31,9 @@ install them with a package manager:
 * `yum install autoconf` (RedHat/SLF)
 * Download source from [GNU](http://ftp.gnu.org/gnu/autoconf/) and build.
 * etc.
+
+It is possible that there is a problem with `make` vs. `gmake` on your 
+system. For now, edit the script and replace the `MAKE=blah` line near
+the top with the appropriate command (a command line options is coming
+perhaps).
+
