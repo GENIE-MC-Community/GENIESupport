@@ -3,7 +3,6 @@
 # Users need to edit this list by hand...
 PDFLIST="GRV98lo.LHgrid GRV98nlo.LHgrid"
 
-MAKE=gmake        # This might need to `make` for some users.
 
 # what are the names of the code archives? we get ROOT
 # from CERN's Git repos. log4cpp is "special" because
@@ -17,6 +16,7 @@ LHAPDFSRC=lhapdf-5.9.1.tar.gz
 ENVFILE="environment_setup.sh"
  
 # command line arg options
+MAKE=gmake           # This might need to `make` for some users.
 MAKENICE=0           # make under nice?
 HELPFLAG=0           # show the help block (if non-zero)
 FORCEBUILD=0         # non-zero will archive existing packages and rebuild
@@ -42,6 +42,7 @@ help()
   echo "                       -p  #  : Build Pythia 6 or 8 and link ROOT to it (required)."
   echo "                       -r tag : Which ROOT version (default = v5-34-17)."
   echo "                       -n     : Run configure, build, etc. under nice."
+  echo "                       -m     : Use \"make\" instead of \"gmake\" to build."
   echo " "
   echo "  Examples:  "
   echo "    ./build_supprt -p 6"
@@ -451,12 +452,13 @@ dobuild()
   mybr
 }
 
-while getopts "p:r:fn" options; do
+while getopts "p:r:fmn" options; do
   case $options in
     p) PYTHIAVER=$OPTARG;;
     r) ROOTTAG=$OPTARG;;
     f) FORCEBUILD=1;;
     n) MAKENICE=1;;
+    m) MAKE=make
   esac
 done
 
