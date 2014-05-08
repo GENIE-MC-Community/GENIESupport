@@ -3,7 +3,6 @@
 # Users need to edit this list by hand...
 PDFLIST="GRV98lo.LHgrid GRV98nlo.LHgrid"
 
-
 # what are the names of the code archives? we get ROOT
 # from CERN's Git repos. log4cpp is "special" because
 # we can't curl it (I think - maybe someone can).
@@ -458,7 +457,7 @@ while getopts "p:r:fmn" options; do
     r) ROOTTAG=$OPTARG;;
     f) FORCEBUILD=1;;
     n) MAKENICE=1;;
-    m) MAKE=make
+    m) MAKE=make;;
   esac
 done
 
