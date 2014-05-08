@@ -125,7 +125,7 @@ dobuild()
   mypush archive
   ARCHIVE=`pwd`
   echo "Saving source tarballs to $ARCHIVE"
-  popd >& /dev/null
+  mypop
 
   # start the environment setup file. archive the old one first.
   if [ -f $ENVFILE ]; then
