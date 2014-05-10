@@ -315,7 +315,7 @@ dobuild()
       else
         badpythia
       fi
-      $NICE ./configure linuxx8664gcc --build=debug $PYTHIASTRING --enable-gsl-shared --enable-mathmore --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB >& log.config
+      $NICE ./configure linuxx8664gcc --build=debug $PYTHIASTRING --enable-gdml --enable-gsl-shared --enable-mathmore --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB >& log.config
       echo "Running make in $PWD..."
       nice $MAKE >& log.make
       echo "Finished ROOT..."
