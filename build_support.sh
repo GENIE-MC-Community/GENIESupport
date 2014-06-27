@@ -8,7 +8,7 @@ PDFLIST="GRV98lo.LHgrid GRV98nlo.LHgrid"
 # we can't curl it (I think - maybe someone can).
 PYTHIASRC=pythia8183.tgz          # only if we use Pythia8.
 GSLSRC=gsl-1.16.tar.gz
-ROOTTAG="v5-34-17"
+ROOTTAG="v5-34-18"
 LOG4CPPSRC=log4cpp-1.1.1.tar.gz       
 LHAPDFSRC=lhapdf-5.9.1.tar.gz
 
