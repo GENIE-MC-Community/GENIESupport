@@ -213,6 +213,7 @@ dobuild()
     echo "Pythia8 lib dir is $PYTHIALIBDIR..."
     echo "export PYTHIA8=$PYTHIALIBDIR" >> $ENVFILE
     echo "export PYTHIA8DATA=$PYTHIA8DATA" >> $ENVFILE
+    echo "export PYTHIA8_INCLUDES=$PYTHIAINCDIR" >> $ENVFILE
     echo "export LD_LIBRARY_PATH=${PYTHIALIBDIR}:\$LD_LIBRARY_PATH" >> $ENVFILE
   elif [ $PYTHIAVER -eq 6 ]; then
     PYTHIADIR=pythia6
