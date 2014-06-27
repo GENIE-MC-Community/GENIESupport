@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 echo "Cleaning archived env setup files..."
 rm -f  archive/*environment_setup*

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Users need to edit this list by hand...
 PDFLIST="GRV98lo.LHgrid GRV98nlo.LHgrid"
@@ -15,6 +15,7 @@ LHAPDFSRC=lhapdf-5.9.1.tar.gz
 ENVFILE="environment_setup.sh"
  
 # command line arg options
+MAKE=gmake           # This might need to `make` for some users.
 MAKENICE=0           # make under nice?
 HELPFLAG=0           # show the help block (if non-zero)
 FORCEBUILD=0         # non-zero will archive existing packages and rebuild
@@ -40,6 +41,7 @@ help()
   echo "                       -p  #  : Build Pythia 6 or 8 and link ROOT to it (required)."
   echo "                       -r tag : Which ROOT version (default = v5-34-17)."
   echo "                       -n     : Run configure, build, etc. under nice."
+  echo "                       -m     : Use \"make\" instead of \"gmake\" to build."
   echo " "
   echo "  Examples:  "
   echo "    ./build_supprt -p 6"
@@ -123,14 +125,14 @@ dobuild()
   mypush archive
   ARCHIVE=`pwd`
   echo "Saving source tarballs to $ARCHIVE"
-  popd >& /dev/null
+  mypop
 
   # start the environment setup file. archive the old one first.
   if [ -f $ENVFILE ]; then
     mv $ENVFILE ${DAT}$ENVFILE
     mv ${DAT}$ENVFILE $ARCHIVE
   fi
-  echo -e "\043\041/bin/sh" > $ENVFILE
+  echo -e "\043\041/bin/bash" > $ENVFILE
 
   GIT=`which git`
   if [ "$GIT" == "" ]; then
@@ -192,7 +194,7 @@ dobuild()
         echo "Running configure in $PWD..."
         $NICE ./configure --enable-debug --enable-shared >& log.config
         echo "Running make in $PWD..."
-        $NICE gmake >& log.make
+        $NICE $MAKE >& log.make
         mypop
         echo "Finished Pythia..."
       else
@@ -263,11 +265,11 @@ dobuild()
       echo "Running configure in $PWD..."
       $NICE ./configure --prefix=$GSLINST >& log.config
       echo "Running make in $PWD..."
-      $NICE make >& log.make
+      $NICE $MAKE >& log.make
       echo "Running make check in $PWD..."
-      $NICE make check >& log.check
+      $NICE $MAKE check >& log.check
       echo "Running make install in $PWD..."
-      $NICE make install >& log.install
+      $NICE $MAKE install >& log.install
       mypop
       echo "Finished GSL..."
       mypop
@@ -314,9 +316,9 @@ dobuild()
       else
         badpythia
       fi
-      $NICE ./configure linuxx8664gcc --build=debug $PYTHIASTRING --enable-gsl-shared --enable-mathmore --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB >& log.config
+      $NICE ./configure linuxx8664gcc --build=debug $PYTHIASTRING --enable-gdml --enable-gsl-shared --enable-mathmore --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB >& log.config
       echo "Running make in $PWD..."
-      nice make >& log.make
+      nice $MAKE >& log.make
       echo "Finished ROOT..."
       mypop
     else
@@ -357,9 +359,9 @@ dobuild()
       echo "Running configure in $PWD..."
       $NICE ./configure --prefix=`pwd` >& log.config
       echo "Running make in $PWD..."
-      $NICE gmake >& log.make
+      $NICE $MAKE >& log.make
       echo "Running make install in $PWD..."
-      $NICE gmake install >& log.install
+      $NICE $MAKE install >& log.install
       echo "Finished log4cpp..."
       mypop
     else
@@ -397,9 +399,9 @@ dobuild()
       echo "Running configure in $PWD..."
       $NICE ./configure --prefix=$LHAINST >& log.config
       echo "Running make in $PWD..."
-      $NICE gmake >& log.make
+      $NICE $MAKE >& log.make
       echo "Running make install in $PWD..."
-      $NICE gmake install >& log.install
+      $NICE $MAKE install >& log.install
       mypop
       mypop
       echo "Finished building LHAPDF..."
@@ -450,12 +452,13 @@ dobuild()
   mybr
 }
 
-while getopts "p:r:fn" options; do
+while getopts "p:r:fmn" options; do
   case $options in
     p) PYTHIAVER=$OPTARG;;
     r) ROOTTAG=$OPTARG;;
     f) FORCEBUILD=1;;
     n) MAKENICE=1;;
+    m) MAKE=make;;
   esac
 done
 
