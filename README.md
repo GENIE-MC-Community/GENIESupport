@@ -10,6 +10,7 @@ Running the script with no arguments will produce the help menu:
                            -r tag : Which ROOT version (default = v5-34-08).
                            -n     : Run configure, build, etc. under nice.
                            -m     : Build using "make" instead of "gmake".
+                           -f     : Archive build directories and start fresh.
      
       Examples:  
         ./build_supprt -p 6

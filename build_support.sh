@@ -42,6 +42,7 @@ help()
   echo "                       -r tag : Which ROOT version (default = v5-34-17)."
   echo "                       -n     : Run configure, build, etc. under nice."
   echo "                       -m     : Use \"make\" instead of \"gmake\" to build."
+  echo "                       -f     : Archive current build and start fresh."
   echo " "
   echo "  Examples:  "
   echo "    ./build_supprt -p 6"
