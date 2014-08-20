@@ -10,7 +10,11 @@ PYTHIASRC=pythia8183.tgz          # only if we use Pythia8.
 GSLSRC=gsl-1.16.tar.gz
 ROOTTAG="v5-34-18"
 LOG4CPPSRC=log4cpp-1.1.1.tar.gz       
+LHAPDFSRC=LHAPDF-6.1.4.tar.gz
 LHAPDFSRC=lhapdf-5.9.1.tar.gz
+LHAPDFMAJOR=5      # should extract from $LHAPDFSRC
+BOOSTSRC=boost_1_56_0.tar.gz
+BOOSTVER="1.56.0"  # should extract from $BOOSTSRC...
 
 ENVFILE="environment_setup.sh"
  
@@ -26,6 +30,7 @@ BUILD_PYTHIA="yes"
 BUILD_GSL="yes"
 BUILD_ROOT="yes"
 BUILD_LOG4CPP="yes"
+BUILD_BOOST="no"   # set to `yes` for LHAPDF 6+
 BUILD_LHAPDF="yes"
 GET_PDFS="yes"     # for lhapdf
 
@@ -96,7 +101,12 @@ getcode()
     mv $1 $ARCHIVE
   else
     echo "Downloading code from the internet..."
-    $WGET $2/$1 >& /dev/null
+    if [ $# -eq 2 ]; then
+      $WGET $2/$1 >& /dev/null
+    elif [ $# -eq 3 ]; then
+      $WGET $2/$1/$3 
+      # $WGET $2/$1/$3 >& /dev/null  # for boost, basically
+    fi
     tar -xvzf $1 >& /dev/null
     mv $1 $ARCHIVE
   fi
@@ -171,6 +181,9 @@ dobuild()
   fi
   if [ "$BUILD_LOG4CPP" == "yes" ]; then
     echo "Will try to build log4cpp..."
+  fi
+  if [ "$BUILD_BOOST" == "yes" ]; then
+    echo "Will try to build boost..."
   fi
   if [ "$BUILD_LHAPDF" == "yes" ];  then
     echo "Will try to build LHAPDF..."
@@ -383,6 +396,39 @@ dobuild()
   echo "export LOG4CPP_LIB=$LOG4CPP_LIB" >> $ENVFILE
   echo "export LD_LIBRARY_PATH=${LOG4CPP_LIB}:\$LD_LIBRARY_PATH" >> $ENVFILE
 
+  if [ $LHAPDFMAJOR -gt 5 ]; then
+    BOOSTDIR=`basename ${BOOSTSRC} .tar.gz`
+    BOOSTROOT=boost
+    mybr
+    if [ "$BUILD_BOOST" == "yes" ]; then
+      mymkarch $BOOSTROOT
+      if [ ! -d $BOOSTROOT ]; then
+        echo "Making installation directories for boost..."
+        mkdir $BOOSTROOT
+        mypush $BOOSTROOT
+        echo "Building boost $BOOSTVER in $PWD..."
+        BOOSTINST=`pwd`
+        echo "Boost install directory is $BOOSTINST..."
+        getcode $BOOSTSRC http://sourceforge.net/projects/boost/files/boost/${BOOSTVER} download
+        mypush $BOOSTDIR
+        echo "Header-only libraries! Not building anything..."
+        echo "  But if we were to build anything for boost, we would do it here..."
+        mypop
+        mypop
+        echo "Finished building boost..."
+      else
+        allreadybuilt "boost"
+      fi
+    else
+      echo "Using pre-built boost..."
+    fi
+    mypush $BOOSTROOT/$BOOSTDIR
+    BOOST_ROOT=`pwd`
+    mypop
+    echo "Boost root is $BOOST_ROOT..."
+    echo "export BOOST_ROOT=$BOOST_ROOT" >> $ENVFILE
+  fi  # if LHAPDF is C++ (6+)
+
   LHAPDFDIR=`basename ${LHAPDFSRC} .tar.gz`
   LHAPDFROOT=lhapdf
   mybr
@@ -392,13 +438,17 @@ dobuild()
       echo "Making installation directories for LHAPDF..."
       mkdir $LHAPDFROOT
       mypush $LHAPDFROOT
-      echo "Building ${LHAPDF} in $PWD..."
+      echo "Building LHAPDF in $PWD..."
       LHAINST=`pwd`
       echo "LHAPDF install directory is $LHAINST..."
       getcode $LHAPDFSRC "http://www.hepforge.org/archive/lhapdf"
       mypush $LHAPDFDIR
       echo "Running configure in $PWD..."
-      $NICE ./configure --prefix=$LHAINST >& log.config
+      WITHBOOST=""
+      if [ $LHAPDFMAJOR -gt 5 ]; then
+        WITHBOOST="--with-boost=$BOOST_ROOT"
+      fi
+      $NICE ./configure --prefix=$LHAINST $WITHBOOST >& log.config
       echo "Running make in $PWD..."
       $NICE $MAKE >& log.make
       echo "Running make install in $PWD..."
