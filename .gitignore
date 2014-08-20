@@ -5,6 +5,7 @@ log4cpp
 root
 pythia*
 environment_setup.sh
+boost
 
 .*.swp
 *~
@@ -15,6 +16,7 @@ archive/*HepMC-*.tar.gz
 archive/*gsl-*.tar.gz
 archive/*lhapdf-*tar.gz
 archive/*LHAPDF-*tar.gz
+archive/*boost*tar.gz
 
 archive/1*
 
