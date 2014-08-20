@@ -14,5 +14,7 @@ archive/*log4cpp*
 archive/*HepMC-*.tar.gz
 archive/*gsl-*.tar.gz
 archive/*lhapdf-*tar.gz
+archive/*LHAPDF-*tar.gz
 
+archive/1*
 
