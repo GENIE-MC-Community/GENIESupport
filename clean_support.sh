@@ -1,17 +1,31 @@
 #!/bin/bash
 
+DO_CLEAN="no"
 CLEAN_ARCHIVE="no"
 HELPFLAG="no"
 
-while getopts "fh" options; do
+while getopts "efh" options; do
   case $options in
+    e) DO_CLEAN="yes";;
     f) CLEAN_ARCHIVE="yes";;
     h) HELPFLAG="yes";;
   esac
 done
 
+if [ "$DO_CLEAN" == "no" ]; then
+  HELPFLAG="yes"
+fi
+
 if [ "$HELPFLAG" == "yes" ]; then
-  echo "./clean_support.sh       -f   # clean the user files in the archive directory as well"
+  echo "./clean_support.sh       -e   # do the clean - this flag MUST be supplied to remove ANYTHING"
+  echo "                         -f   # clean the user files in the archive directory as well"
+  echo "                         -h   # show help and exit"
+  echo " "
+  echo " Examples:   "
+  echo "  ./clean_support.sh -e      # clean the install"
+  echo "  ./clean_support.sh -e -f   # clean the install and the archive"
+  echo "  ./clean_support.sh -f      # NO CLEAN. print help and exit!"
+  echo "  ./clean_support.sh -e -h   # NO CLEAN. print help and exit!"
   exit 0
 fi
 
