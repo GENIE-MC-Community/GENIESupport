@@ -42,6 +42,9 @@ if [ "$CLEAN_ARCHIVE" == "yes" ]; then
   rm -rf archive/1*log4cpp.tgz
   echo "Cleaning archived LHAPDF tar balls..."
   rm -rf archive/*lhapdf*tar.gz
+  rm -rf archive/*LHAPDF*tar.gz
+  echo "Cleaning archived boost tar balls..."
+  rm -rf archive/*boost*.tar.gz
   echo "Cleaning archived Pythia8 tar balls..."
   rm -rf archive/*pythia8*.tgz
 fi
@@ -52,8 +55,12 @@ echo "Cleaning GSL..."
 rm -rf gsl
 echo "Cleaning HepMC..."
 rm -rf hepmc
+echo "Cleaning boost..."
+rm -rf boost
 echo "Cleaning LHAPDF..."
 rm -rf lhapdf
+echo "Cleaning ROOT..."
+rm -rf root
 echo "Cleaning log4cpp..."
 rm -rf log4cpp
 echo "Cleaning Pythia6..."
