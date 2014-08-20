@@ -1,7 +1,9 @@
-#Basic Usage
+# Basic Usage
 
 This script will install the required third party packages to build GENIE 
-from source. It has been lightly test on Scientific Linux 5 only.
+from source. It has been thoroughly tested on Scientific Linux 5 only. Some
+users have had success on Ubuntu, but read the trouble-shooting section
+carefully.
 
 Running the script with no arguments will produce the help menu:
 
@@ -16,7 +18,7 @@ Running the script with no arguments will produce the help menu:
         ./build_supprt -p 6
         ./build_supprt -p 8 -r v5-34-12
 
-#Trouble-Shooting
+# Trouble-Shooting
 
 This is a bash script, so some errors will likely occur under different
 shells. If you get errors, make sure `/bin/bash` exists and is not a 
@@ -38,3 +40,8 @@ It is possible that there is a problem with `make` vs. `gmake` on your
 system. If you find cryptic error messages associated with libtool and 
 autoconf while attempting to build log4cpp, you may chose to try make
 in place of gmake.
+
+# To-Do
+
+Build support is included for LHAPDF 6, but installation flags are not
+exposed yet. We need to settle on a new PDF set first.
