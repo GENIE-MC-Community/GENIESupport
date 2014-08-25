@@ -12,9 +12,9 @@ ROOTTAG="v5-34-18"
 LOG4CPPSRC=log4cpp-1.1.1.tar.gz       
 LHAPDFSRC=LHAPDF-6.1.4.tar.gz
 LHAPDFSRC=lhapdf-5.9.1.tar.gz
-LHAPDFMAJOR=5      # should extract from $LHAPDFSRC
+LHAPDFMAJOR=`echo $LHAPDFSRC | cut -c8-8` # expecting 'lhapdf-M.', etc.
 BOOSTSRC=boost_1_56_0.tar.gz
-BOOSTVER="1.56.0"  # should extract from $BOOSTSRC...
+BOOSTVER=`echo $BOOSTSRC | python -c "import sys;t=sys.stdin.readline().split('.')[0].split('_');print '%s.%s.%s'%(t[1],t[2],t[3])"`
 
 ENVFILE="environment_setup.sh"
  
