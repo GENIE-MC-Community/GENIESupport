@@ -490,9 +490,13 @@ dobuild()
       fi
     done
     mypop
+    if [ $LHAPDFMAJOR -eq 5 ]; then
+      echo "Installing the patched GRV98lo file from the archive."
+      cp -b archive/GRV98lo_pdflib.LHgrid $LHAPATH/GRV98lo.LHgrid
+    fi
     echo "Finished getting PDFs..."
   else
-    mypush $LHAPDFROOT/bin
+    mypush $LHAPATH
     echo "PDF sets present: "
     ls *.*
     mypop
