@@ -50,8 +50,8 @@ help()
   echo "                       -f     : Archive current build and start fresh."
   echo " "
   echo "  Examples:  "
-  echo "    ./build_supprt -p 6"
-  echo "    ./build_supprt -p 8 -r v5-34-18"
+  echo "    ./build_support -p 6"
+  echo "    ./build_support -p 8 -r v5-34-18"
   mybr
   echo " "
 }
