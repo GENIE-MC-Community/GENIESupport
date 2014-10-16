@@ -6,6 +6,7 @@ root
 pythia*
 environment_setup.sh
 boost
+RooMUHistos
 
 .*.swp
 *~
