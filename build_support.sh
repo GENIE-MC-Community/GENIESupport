@@ -24,6 +24,7 @@ MAKENICE=0           # make under nice?
 HELPFLAG=0           # show the help block (if non-zero)
 FORCEBUILD=0         # non-zero will archive existing packages and rebuild
 PYTHIAVER=-1         # must eventually be either 6 or 8
+HTTPSCHECKOUT=0      # use https checkout if non-zero (otherwise ssh)
 
 # should we build these packages? - testing variables
 BUILD_PYTHIA="yes"
@@ -33,6 +34,7 @@ BUILD_LOG4CPP="yes"
 BUILD_BOOST="no"   # set to `yes` for LHAPDF 6+
 BUILD_LHAPDF="yes"
 GET_PDFS="yes"     # for lhapdf
+BUILD_ROOMU="yes"
 
 
 #-----------------------------------------------------
@@ -48,6 +50,7 @@ help()
   echo "                       -n     : Run configure, build, etc. under nice."
   echo "                       -m     : Use \"make\" instead of \"gmake\" to build."
   echo "                       -f     : Archive current build and start fresh."
+  echo "                       -s     : Use https to check out from GitHub (default is ssh)"
   echo " "
   echo "  Examples:  "
   echo "    ./build_support -p 6"
@@ -111,13 +114,15 @@ getcode()
     mv $1 $ARCHIVE
   fi
 }
+
 # bail on illegal versions of Pythia
 badpythia()
 {
   echo "Illegal version of Pythia! Only 6 or 8 are accepted."
   exit 0
 }
-#
+
+# echo if the arg was already built
 allreadybuilt()
 {
   echo "$1 top directory present. Remove or run with force (-f) to rebuild."
@@ -187,6 +192,9 @@ dobuild()
   fi
   if [ "$BUILD_LHAPDF" == "yes" ];  then
     echo "Will try to build LHAPDF..."
+  fi
+  if [ "$BUILD_ROOMU" == "yes" ];  then
+    echo "Will try to build RooMUHistos..."
   fi
 
   if [ $MAKENICE -ne 0 ]; then
@@ -503,17 +511,48 @@ dobuild()
   fi
 
   mybr
+  if [ "$BUILD_ROOMU" == "yes" ]; then
+    ROOMUPKG=RooMUHistos
+    mymkarch $ROOMUPKG
+    if [ ! -d $ROOMUPKG ]; then
+      echo "Building RooMUHistos in $ROOMUPKG..." 
+      git clone ${GITCHECKOUT}ManyUniverseAna/${ROOMUPKG}.git
+      export PATH=$ROOMU_SYS/bin:$PATH
+      mypush $ROOMUPKG
+      ROOMU_SYS=`pwd`
+      echo " ROOMU_SYS is $ROOMU_SYS..."
+      export ROOMU_SYS=$ROOMU_SYS
+      mypush PlotUtils
+      $NICE $MAKE >& log.make
+      mypop
+      mypush macros
+      $NICE $MAKE >& log.make
+      mypop
+      mypop
+    else
+      echo "Using pre-built RooMUHistos..."
+      mypush $ROOMUPKG
+      ROOMU_SYS=`pwd`
+      mypop
+    fi
+    echo "export ROOMU_SYS=$ROOMU_SYS" >> $ENVFILE
+    echo "export LD_LIBRARY_PATH=$ROOMU_SYS/lib:\$LD_LIBRARY_PATH" >> $ENVFILE
+    echo "export PATH=\$ROOMU_SYS/bin:\$PATH" >> $ENVFILE
+  fi
+
+  mybr
   echo "Done!"
   mybr
 }
 
-while getopts "p:r:fmn" options; do
+while getopts "p:r:fmns" options; do
   case $options in
     p) PYTHIAVER=$OPTARG;;
     r) ROOTTAG=$OPTARG;;
     f) FORCEBUILD=1;;
     n) MAKENICE=1;;
     m) MAKE=make;;
+    s) HTTPSCHECKOUT=1;;
   esac
 done
 
@@ -531,5 +570,11 @@ if [ $PYTHIAVER -ne 6 -a $PYTHIAVER -ne 8 ]; then
 fi
 echo "Selected ROOT tag is $ROOTTAG..."
 
+GITCHECKOUT="http://github.com/"
+if [ $HTTPSCHECKOUT -ne 0 ]; then
+  GITCHECKOUT="https://github.com/"
+else
+  GITCHECKOUT="git@github.com:"
+fi
 
 dobuild
