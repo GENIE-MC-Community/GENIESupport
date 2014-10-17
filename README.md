@@ -13,6 +13,7 @@ Running the script with no arguments will produce the help menu:
                            -n     : Run configure, build, etc. under nice.
                            -m     : Build using "make" instead of "gmake".
                            -f     : Archive build directories and start fresh.
+                           -s     : Use https to check out from GitHub (default is ssh)
      
       Examples:  
         ./build_supprt -p 6
@@ -40,6 +41,11 @@ It is possible that there is a problem with `make` vs. `gmake` on your
 system. If you find cryptic error messages associated with libtool and 
 autoconf while attempting to build log4cpp, you may chose to try make
 in place of gmake.
+
+Finally, the default checkout method for packages living in GitHub is
+ssh (because it was easier for me to configure at Fermilab). If you run
+into "permission denied" errors, try using the `https` checkout flag,
+`-s` and see if that works.
 
 # To-Do
 
