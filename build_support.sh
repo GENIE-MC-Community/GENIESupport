@@ -500,7 +500,7 @@ dobuild()
     mypop
     if [ $LHAPDFMAJOR -eq 5 ]; then
       echo "Installing the patched GRV98lo file from the archive."
-      cp -b archive/GRV98lo_pdflib.LHgrid $LHAPATH/GRV98lo.LHgrid
+      cp -b archive/GRV98lo_pdflib.LHgrid $LHAPATH/GRV98lo_patched.LHgrid
     fi
     echo "Finished getting PDFs..."
   else
