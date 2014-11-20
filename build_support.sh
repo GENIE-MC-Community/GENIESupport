@@ -522,6 +522,9 @@ dobuild()
       ROOMU_SYS=`pwd`
       echo " ROOMU_SYS is $ROOMU_SYS..."
       export ROOMU_SYS=$ROOMU_SYS
+# to build RooMUHistos, ROOT env.var. need to be explicitly set 
+      export ROOTSYS=$ROOTSYS
+      export LD_LIBRARY_PATH=${ROOTSYS}/lib:$LD_LIBRARY_PATH
       mypush PlotUtils
       $NICE $MAKE >& log.make
       mypop
