@@ -51,3 +51,9 @@ into "permission denied" errors, try using the `https` checkout flag,
 
 Build support is included for LHAPDF 6, but installation flags are not
 exposed yet. We need to settle on a new PDF set first.
+
+## Contributors
+
+* Gabriel Perdue,  [Fermilab](http://www.fnal.gov)
+* Julia Yarba,     [Fermilab](http://www.fnal.gov)
+
