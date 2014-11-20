@@ -47,6 +47,7 @@ if [ "$CLEAN_ARCHIVE" == "yes" ]; then
   rm -rf archive/*boost*.tar.gz
   echo "Cleaning archived Pythia8 tar balls..."
   rm -rf archive/*pythia8*.tgz
+# NOTE: RooMUHistos is not archived (yet); nothing to remove
 fi
 
 echo "Cleaning env setup file..."
@@ -67,3 +68,5 @@ echo "Cleaning Pythia6..."
 rm -rf pythia6
 echo "Cleaning Pythia8..."
 rm -rf pythia8*
+echo "Cleaning RooMUHistos..."
+rm -rf RooMUHistos*
