@@ -1,5 +1,28 @@
 #!/bin/bash
 
+# how to use the script - don't autoindent above the `cat`s below!
+help()
+{
+  mybr
+cat <<EOF
+Usage: ./build_support -<flag>
+                       -h     : print the help menu
+                       -p  #  : Pythia 6 or 8 and link ROOT to it (required).
+                       -r tag : Which ROOT version (default = v5-34-17).
+                       -n     : Run configure, build, etc. under nice.
+                       -m     : Use \"make\" instead of \"gmake\" to build.
+                       -f     : Archive current build and start fresh.
+                       -s     : Use https for GitHub checkout (default is ssh)
+                       -v     : Print logging data to stdout during installation
+ 
+  Examples:  
+    ./build_support -p 6
+    ./build_support -p 8 -r v5-34-18
+EOF
+  mybr
+  echo " "
+}
+
 # Users need to edit this list by hand...
 PDFLIST="GRV98lo.LHgrid GRV98nlo.LHgrid"
 
@@ -41,26 +64,6 @@ BUILD_ROOMU="no"
 #-----------------------------------------------------
 # Begin work...
 
-# how to use the script
-help()
-{
-  mybr
-  echo "Usage: ./build_support -<flag>"
-  echo "                       -h     : print the help menu"
-  echo "                       -p  #  : Build Pythia 6 or 8 and link ROOT to it (required)."
-  echo "                       -r tag : Which ROOT version (default = v5-34-17)."
-  echo "                       -n     : Run configure, build, etc. under nice."
-  echo "                       -m     : Use \"make\" instead of \"gmake\" to build."
-  echo "                       -f     : Archive current build and start fresh."
-  echo "                       -s     : Use https to check out from GitHub (default is ssh)"
-  echo "                       -v     : Print logging data to standard out during installation"
-  echo " "
-  echo "  Examples:  "
-  echo "    ./build_support -p 6"
-  echo "    ./build_support -p 8 -r v5-34-18"
-  mybr
-  echo " "
-}
 
 # quiet pushd
 mypush() 
@@ -81,7 +84,7 @@ mypop()
 # uniformly printed "subject" breaks
 mybr()
 {
-  echo "----------------------------------------"
+  echo "------------------------------------------------------------------------------"
 }
 
 # save a copy of the install if it already exists
