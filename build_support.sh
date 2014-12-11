@@ -25,16 +25,17 @@ HELPFLAG=0           # show the help block (if non-zero)
 FORCEBUILD=0         # non-zero will archive existing packages and rebuild
 PYTHIAVER=-1         # must eventually be either 6 or 8
 HTTPSCHECKOUT=0      # use https checkout if non-zero (otherwise ssh)
+VERBOSE=0            # send logging data to stdout also
 
 # should we build these packages? - testing variables
 BUILD_PYTHIA="yes"
-BUILD_GSL="yes"
-BUILD_ROOT="yes"
-BUILD_LOG4CPP="yes"
+BUILD_GSL="no"
+BUILD_ROOT="no"
+BUILD_LOG4CPP="no"
 BUILD_BOOST="no"   # set to `yes` for LHAPDF 6+
-BUILD_LHAPDF="yes"
-GET_PDFS="yes"     # for lhapdf
-BUILD_ROOMU="yes"
+BUILD_LHAPDF="no"
+GET_PDFS="no"     # for lhapdf
+BUILD_ROOMU="no"
 
 
 #-----------------------------------------------------
@@ -45,12 +46,14 @@ help()
 {
   mybr
   echo "Usage: ./build_support -<flag>"
+  echo "                       -h     : print the help menu"
   echo "                       -p  #  : Build Pythia 6 or 8 and link ROOT to it (required)."
   echo "                       -r tag : Which ROOT version (default = v5-34-17)."
   echo "                       -n     : Run configure, build, etc. under nice."
   echo "                       -m     : Use \"make\" instead of \"gmake\" to build."
   echo "                       -f     : Archive current build and start fresh."
   echo "                       -s     : Use https to check out from GitHub (default is ssh)"
+  echo "                       -v     : Print logging data to standard out during installation"
   echo " "
   echo "  Examples:  "
   echo "    ./build_support -p 6"
@@ -213,10 +216,14 @@ dobuild()
         echo "Getting source in $PWD..."
         getcode $PYTHIASRC "http://home.thep.lu.se/~torbjorn/pythia8"
         mypush $PYTHIADIR
-        echo "Running configure in $PWD..."
-        $NICE ./configure --enable-debug --enable-shared >& log.config
-        echo "Running make in $PWD..."
-        $NICE $MAKE >& log.make
+        echo "Running configure and make in $PWD..."
+        if [[ $VERBOSE = 1 ]]; then
+          $NICE ./configure --enable-debug --enable-shared | tee log.config
+          $NICE $MAKE | tee log.make
+        else
+          $NICE ./configure --enable-debug --enable-shared >& log.config
+          $NICE $MAKE >& log.make
+        fi
         mypop
         echo "Finished Pythia..."
       else
@@ -249,10 +256,14 @@ dobuild()
         mkdir $PYTHIADIR
         pushd $PYTHIADIR
         echo "Getting script in $PWD..."
-        mv ${ARCHIVE}/build_pythia6.sh .
+        cp ${ARCHIVE}/build_pythia6.sh .
         echo "Running the script in $PWD..."
-        $NICE ./build_pythia6.sh >& log.pythia6
-        mv build_pythia6.sh $ARCHIVE
+        if [[ $VERBOSE = 1 ]]; then
+          $NICE ./build_pythia6.sh | tee log.pythia6
+        else
+          $NICE ./build_pythia6.sh >& log.pythia6
+        fi
+        rm build_pythia6.sh 
         mypop
         echo "Finished Pythia..."
         mypop
@@ -551,14 +562,16 @@ dobuild()
   mybr
 }
 
-while getopts "p:r:fmns" options; do
+while getopts "p:r:fhmnsv" options; do
   case $options in
     p) PYTHIAVER=$OPTARG;;
     r) ROOTTAG=$OPTARG;;
     f) FORCEBUILD=1;;
+    h) HELPFLAG=1;;
     n) MAKENICE=1;;
     m) MAKE=make;;
     s) HTTPSCHECKOUT=1;;
+    v) VERBOSE=1;;
   esac
 done
 
