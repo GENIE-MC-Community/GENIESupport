@@ -51,8 +51,8 @@ HTTPSCHECKOUT=0      # use https checkout if non-zero (otherwise ssh)
 VERBOSE=0            # send logging data to stdout also
 
 # should we build these packages? - testing variables
-BUILD_PYTHIA="yes"
-BUILD_GSL="no"
+BUILD_PYTHIA="no"
+BUILD_GSL="yes"
 BUILD_ROOT="no"
 BUILD_LOG4CPP="no"
 BUILD_BOOST="no"   # set to `yes` for LHAPDF 6+
@@ -60,6 +60,8 @@ BUILD_LHAPDF="no"
 GET_PDFS="no"     # for lhapdf
 BUILD_ROOMU="no"
 
+ADD_PYTHIA_ENV="no"
+ADD_GSL_ENV="yes"
 
 #-----------------------------------------------------
 # Begin work...
@@ -235,20 +237,22 @@ dobuild()
     else 
       echo "Using pre-built Pythia8..."
     fi
-    mypush $PYTHIADIR/lib
-    PYTHIALIBDIR=`pwd`
-    mypop
-    mypush $PYTHIADIR/include
-    PYTHIAINCDIR=`pwd`
-    mypop
-    mypush $PYTHIADIR/xmldoc
-    PYTHIA8DATA=`pwd`
-    mypop
-    echo "Pythia8 lib dir is $PYTHIALIBDIR..."
-    echo "export PYTHIA8=$PYTHIALIBDIR" >> $ENVFILE
-    echo "export PYTHIA8DATA=$PYTHIA8DATA" >> $ENVFILE
-    echo "export PYTHIA8_INC=$PYTHIAINCDIR" >> $ENVFILE
-    echo "export LD_LIBRARY_PATH=${PYTHIALIBDIR}:\$LD_LIBRARY_PATH" >> $ENVFILE
+    if [ "$ADD_PYTHIA_ENV" == "yes" ]; then
+      mypush $PYTHIADIR/lib
+      PYTHIALIBDIR=`pwd`
+      mypop
+      mypush $PYTHIADIR/include
+      PYTHIAINCDIR=`pwd`
+      mypop
+      mypush $PYTHIADIR/xmldoc
+      PYTHIA8DATA=`pwd`
+      mypop
+      echo "Pythia8 lib dir is $PYTHIALIBDIR..."
+      echo "export PYTHIA8=$PYTHIALIBDIR" >> $ENVFILE
+      echo "export PYTHIA8DATA=$PYTHIA8DATA" >> $ENVFILE
+      echo "export PYTHIA8_INC=$PYTHIAINCDIR" >> $ENVFILE
+      echo "export LD_LIBRARY_PATH=${PYTHIALIBDIR}:\$LD_LIBRARY_PATH" >> $ENVFILE
+    fi
   elif [ $PYTHIAVER -eq 6 ]; then
     PYTHIADIR=pythia6
     mybr
@@ -276,12 +280,14 @@ dobuild()
     else 
       echo "Using pre-built Pythia6..."
     fi
-    mypush $PYTHIADIR/v6_424/lib
-    PYTHIALIBDIR=`pwd`
-    mypop
-    echo "Pythia6 lib dir is $PYTHIALIBDIR..."
-    echo "export PYTHIA6=$PYTHIALIBDIR" >> $ENVFILE
-    echo "export LD_LIBRARY_PATH=${PYTHIALIBDIR}:\$LD_LIBRARY_PATH" >> $ENVFILE
+    if [ "$ADD_PYTHIA_ENV" == "yes" ]; then
+      mypush $PYTHIADIR/v6_424/lib
+      PYTHIALIBDIR=`pwd`
+      mypop
+      echo "Pythia6 lib dir is $PYTHIALIBDIR..."
+      echo "export PYTHIA6=$PYTHIALIBDIR" >> $ENVFILE
+      echo "export LD_LIBRARY_PATH=${PYTHIALIBDIR}:\$LD_LIBRARY_PATH" >> $ENVFILE
+    fi
   else 
     badpythia
   fi
@@ -299,13 +305,29 @@ dobuild()
       GSLINST=`pwd`
       mypush $GSLDIR
       echo "Running configure in $PWD..."
-      $NICE ./configure --prefix=$GSLINST >& log.config
+      if [[ $VERBOSE = 1 ]]; then
+        $NICE ./configure --prefix=$GSLINST | tee log.config
+      else
+        $NICE ./configure --prefix=$GSLINST >& log.config
+      fi
       echo "Running make in $PWD..."
-      $NICE $MAKE >& log.make
+      if [[ $VERBOSE = 1 ]]; then
+        $NICE $MAKE | tee log.make
+      else
+        $NICE $MAKE >& log.make
+      fi
       echo "Running make check in $PWD..."
-      $NICE $MAKE check >& log.check
+      if [[ $VERBOSE = 1 ]]; then
+        $NICE $MAKE check | tee log.check
+      else
+        $NICE $MAKE check >& log.check
+      fi
       echo "Running make install in $PWD..."
-      $NICE $MAKE install >& log.install
+      if [[ $VERBOSE = 1 ]]; then
+        $NICE $MAKE install | tee log.install
+      else
+        $NICE $MAKE install >& log.install
+      fi
       mypop
       echo "Finished GSL..."
       mypop
@@ -315,17 +337,19 @@ dobuild()
   else
     echo "Using pre-built GSL..."
   fi
-  mypush gsl/lib
-  GSLLIB=`pwd`
-  mypop
-  mypush gsl/include
-  GSLINC=`pwd`
-  mypop
-  echo "GSL lib dir is $GSLLIB..."
-  echo "GSL inc dir is $GSLINC..."
-  echo "export GSLLIB=$GSLLIB" >> $ENVFILE
-  echo "export GSLINC=$GSLLINC" >> $ENVFILE
-  echo "export LD_LIBRARY_PATH=${GSLLIB}:\$LD_LIBRARY_PATH" >> $ENVFILE
+  if [ "$ADD_GSL_ENV" == "yes" ]; then
+    mypush gsl/lib
+    GSLLIB=`pwd`
+    mypop
+    mypush gsl/include
+    GSLINC=`pwd`
+    mypop
+    echo "GSL lib dir is $GSLLIB..."
+    echo "GSL inc dir is $GSLINC..."
+    echo "export GSLLIB=$GSLLIB" >> $ENVFILE
+    echo "export GSLINC=$GSLLINC" >> $ENVFILE
+    echo "export LD_LIBRARY_PATH=${GSLLIB}:\$LD_LIBRARY_PATH" >> $ENVFILE
+  fi
 
   mybr
   if [ "$BUILD_ROOT" == "yes" ]; then
