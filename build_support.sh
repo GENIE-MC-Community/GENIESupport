@@ -51,8 +51,8 @@ HTTPSCHECKOUT=0      # use https checkout if non-zero (otherwise ssh)
 VERBOSE=0            # send logging data to stdout also
 
 # should we build these packages? - testing variables
-BUILD_PYTHIA="yes"
-BUILD_GSL="no"
+BUILD_PYTHIA="no"
+BUILD_GSL="yes"
 BUILD_ROOT="no"
 BUILD_LOG4CPP="no"
 BUILD_BOOST="no"   # set to `yes` for LHAPDF 6+
@@ -60,8 +60,9 @@ BUILD_LHAPDF="no"
 GET_PDFS="no"     # for lhapdf
 BUILD_ROOMU="no"
 
-ADD_PYTHIA_ENV="no"
-ADD_GSL_ENV="yes"
+ADD_PYTHIA_ENV=$BUILD_PYTHIA
+ADD_GSL_ENV=$BUILD_GSL
+ADD_ROOT_ENV="yes"
 
 #-----------------------------------------------------
 # Begin work...
@@ -319,29 +320,13 @@ dobuild()
       GSLINST=`pwd`
       mypush $GSLDIR
       echo "Running configure in $PWD..."
-      if [[ $VERBOSE = 1 ]]; then
-        $NICE ./configure --prefix=$GSLINST | tee log.config
-      else
-        $NICE ./configure --prefix=$GSLINST >& log.config
-      fi
+      exec_package_comm "./configure --prefix=$GSLINST" "log.config"
       echo "Running make in $PWD..."
-      if [[ $VERBOSE = 1 ]]; then
-        $NICE $MAKE | tee log.make
-      else
-        $NICE $MAKE >& log.make
-      fi
+      exec_package_comm "$MAKE" "log.make"
       echo "Running make check in $PWD..."
-      if [[ $VERBOSE = 1 ]]; then
-        $NICE $MAKE check | tee log.check
-      else
-        $NICE $MAKE check >& log.check
-      fi
+      exec_package_comm "$MAKE check" "log.check"
       echo "Running make install in $PWD..."
-      if [[ $VERBOSE = 1 ]]; then
-        $NICE $MAKE install | tee log.install
-      else
-        $NICE $MAKE install >& log.install
-      fi
+      exec_package_comm "$MAKE install" "log.install"
       mypop
       echo "Finished GSL..."
       mypop
