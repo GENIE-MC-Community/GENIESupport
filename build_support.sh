@@ -33,8 +33,8 @@ PYTHIASRC=pythia8183.tgz          # only if we use Pythia8.
 GSLSRC=gsl-1.16.tar.gz
 ROOTTAG="v5-34-18"
 LOG4CPPSRC=log4cpp-1.1.1.tar.gz       
-LHAPDFSRC=LHAPDF-6.1.4.tar.gz
 LHAPDFSRC=lhapdf-5.9.1.tar.gz
+LHAPDFSRC=LHAPDF-6.1.4.tar.gz
 LHAPDFMAJOR=`echo $LHAPDFSRC | cut -c8-8` # expecting 'lhapdf-M.', etc.
 BOOSTSRC=boost_1_56_0.tar.gz
 BOOSTVER=`echo $BOOSTSRC | python -c "import sys;t=sys.stdin.readline().split('.')[0].split('_');print '%s.%s.%s'%(t[1],t[2],t[3])"`
@@ -51,18 +51,22 @@ HTTPSCHECKOUT=0      # use https checkout if non-zero (otherwise ssh)
 VERBOSE=0            # send logging data to stdout also
 
 # should we build these packages? - testing variables
-BUILD_PYTHIA="no"
+BUILD_PYTHIA="yes"
 BUILD_GSL="yes"
-BUILD_ROOT="no"
-BUILD_LOG4CPP="no"
-BUILD_BOOST="no"   # set to `yes` for LHAPDF 6+
+BUILD_ROOT="yes"
+BUILD_LOG4CPP="yes"
+BUILD_BOOST="yes"   # set to `yes` for LHAPDF 6+
 BUILD_LHAPDF="no"
 GET_PDFS="no"     # for lhapdf
 BUILD_ROOMU="no"
 
 ADD_PYTHIA_ENV=$BUILD_PYTHIA
 ADD_GSL_ENV=$BUILD_GSL
-ADD_ROOT_ENV="yes"
+ADD_ROOT_ENV=$BUILD_ROOT
+ADD_LOG4CPP_ENV=$BUILD_LOG4CPP
+ADD_BOOST_ENV=$BUILD_BOOST
+ADD_LHAPDF_ENV="yes"
+ADD_ROOMU_ENV=$BUILD_ROOMU
 
 #-----------------------------------------------------
 # Begin work...
@@ -378,9 +382,10 @@ dobuild()
       else
         badpythia
       fi
-      $NICE ./configure linuxx8664gcc --build=debug $PYTHIASTRING --enable-gdml --enable-gsl-shared --enable-mathmore --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB >& log.config
+      exec_package_comm "$NICE ./configure linuxx8664gcc --build=debug $PYTHIASTRING --enable-gdml --enable-gsl-shared --enable-mathmore --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB" "log.config"
       echo "Running make in $PWD..."
-      nice $MAKE >& log.make
+      # nice $MAKE >& log.make
+      exec_package_comm "$MAKE" "log.make"
       echo "Finished ROOT..."
       mypop
     else
@@ -389,13 +394,15 @@ dobuild()
   else
     echo "Using pre-built ROOT..."
   fi
-  mypush root
-  ROOTSYS=`pwd`
-  echo "ROOTSYS is $ROOTSYS..."
-  mypop
-  echo "export ROOTSYS=$ROOTSYS" >> $ENVFILE
-  echo "export PATH=${ROOTSYS}/bin:\$PATH" >> $ENVFILE
-  echo "export LD_LIBRARY_PATH=${ROOTSYS}/lib:\$LD_LIBRARY_PATH" >> $ENVFILE
+  if [ "$ADD_ROOT_ENV" == "yes" ]; then
+    mypush root
+    ROOTSYS=`pwd`
+    echo "ROOTSYS is $ROOTSYS..."
+    mypop
+    echo "export ROOTSYS=$ROOTSYS" >> $ENVFILE
+    echo "export PATH=${ROOTSYS}/bin:\$PATH" >> $ENVFILE
+    echo "export LD_LIBRARY_PATH=${ROOTSYS}/lib:\$LD_LIBRARY_PATH" >> $ENVFILE
+  fi
 
   LOG4CPPDIR="log4cpp"
   mybr
@@ -417,12 +424,14 @@ dobuild()
         mypush $LOG4CPPDIR
       fi
       echo "Running autogen in $PWD..."
-      $NICE ./autogen.sh >& log.autogen
+      exec_package_comm "$NICE ./autogen.sh" "log.autogen"
       echo "Running configure in $PWD..."
-      $NICE ./configure --prefix=`pwd` >& log.config
+      exec_package_comm "$NICE ./configure --prefix=`pwd`" "log.config"
       echo "Running make in $PWD..."
-      $NICE $MAKE >& log.make
+      exec_package_comm "$NICE $MAKE" "log.make"
       echo "Running make install in $PWD..."
+      echo "  ...for some reason, make install usually succeeds, but throws an"
+      echo "  error anyway, so we won't check for success here (yet)."
       $NICE $MAKE install >& log.install
       echo "Finished log4cpp..."
       mypop
@@ -432,17 +441,19 @@ dobuild()
   else
     echo "Using pre-built log4cpp..."
   fi
-  mypush $LOG4CPPDIR/include
-  LOG4CPP_INC=`pwd`
-  mypop
-  mypush $LOG4CPPDIR/lib
-  LOG4CPP_LIB=`pwd`
-  mypop
-  echo "log4cpp lib dir is $LOG4CPP_LIB..."
-  echo "log4cpp inc dir is $LOG4CPP_INC..."
-  echo "export LOG4CPP_INC=$LOG4CPP_INC" >> $ENVFILE
-  echo "export LOG4CPP_LIB=$LOG4CPP_LIB" >> $ENVFILE
-  echo "export LD_LIBRARY_PATH=${LOG4CPP_LIB}:\$LD_LIBRARY_PATH" >> $ENVFILE
+  if [ "$ADD_LOG4CPP_ENV" == "yes" ]; then
+    mypush $LOG4CPPDIR/include
+    LOG4CPP_INC=`pwd`
+    mypop
+    mypush $LOG4CPPDIR/lib
+    LOG4CPP_LIB=`pwd`
+    mypop
+    echo "log4cpp lib dir is $LOG4CPP_LIB..."
+    echo "log4cpp inc dir is $LOG4CPP_INC..."
+    echo "export LOG4CPP_INC=$LOG4CPP_INC" >> $ENVFILE
+    echo "export LOG4CPP_LIB=$LOG4CPP_LIB" >> $ENVFILE
+    echo "export LD_LIBRARY_PATH=${LOG4CPP_LIB}:\$LD_LIBRARY_PATH" >> $ENVFILE
+  fi
 
   if [ $LHAPDFMAJOR -gt 5 ]; then
     BOOSTDIR=`basename ${BOOSTSRC} .tar.gz`
