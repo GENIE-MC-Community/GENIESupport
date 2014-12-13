@@ -51,8 +51,8 @@ HTTPSCHECKOUT=0      # use https checkout if non-zero (otherwise ssh)
 VERBOSE=0            # send logging data to stdout also
 
 # should we build these packages? - testing variables
-BUILD_PYTHIA="no"
-BUILD_GSL="yes"
+BUILD_PYTHIA="yes"
+BUILD_GSL="no"
 BUILD_ROOT="no"
 BUILD_LOG4CPP="no"
 BUILD_BOOST="no"   # set to `yes` for LHAPDF 6+
@@ -136,7 +136,29 @@ allreadybuilt()
   echo "$1 top directory present. Remove or run with force (-f) to rebuild."
 }
 
-# build the packages...
+# build/configure a package
+exec_package_comm()
+{
+  echo "Build command is: $1, and log file is: $2"
+  if [[ $VERBOSE = 1 ]]; then
+    $NICE $1 | tee $2
+  else
+    $NICE $1 >& $2
+  fi
+  check_status $? $1
+}
+
+check_status()
+{
+  if [[ $1 == 0 ]]; then
+    echo " $2: Success!"
+  else
+    echo " $2: Failure!"
+    exit $1
+  fi
+}
+
+# build ALL the packages...
 dobuild()
 {
 
@@ -221,14 +243,10 @@ dobuild()
         echo "Getting source in $PWD..."
         getcode $PYTHIASRC "http://home.thep.lu.se/~torbjorn/pythia8"
         mypush $PYTHIADIR
-        echo "Running configure and make in $PWD..."
-        if [[ $VERBOSE = 1 ]]; then
-          $NICE ./configure --enable-debug --enable-shared | tee log.config
-          $NICE $MAKE | tee log.make
-        else
-          $NICE ./configure --enable-debug --enable-shared >& log.config
-          $NICE $MAKE >& log.make
-        fi
+        echo "Running configure in $PWD..."
+        exec_package_comm "./configure --enable-debug --enable-shared" "log.config"
+        echo "Running make in $PWD..."
+        exec_package_comm "$MAKE" "log.make"
         mypop
         echo "Finished Pythia..."
       else
@@ -265,11 +283,7 @@ dobuild()
         echo "Getting script in $PWD..."
         cp ${ARCHIVE}/build_pythia6.sh .
         echo "Running the script in $PWD..."
-        if [[ $VERBOSE = 1 ]]; then
-          $NICE ./build_pythia6.sh | tee log.pythia6
-        else
-          $NICE ./build_pythia6.sh >& log.pythia6
-        fi
+        exec_package_comm "./build_pythia6.sh" "log.pythia6"        
         rm build_pythia6.sh 
         mypop
         echo "Finished Pythia..."
