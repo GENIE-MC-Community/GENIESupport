@@ -8,7 +8,7 @@ cat <<EOF
 Usage: ./build_support -<flag>
                        -h     : print the help menu
                        -p  #  : Pythia 6 or 8 and link ROOT to it (required).
-                       -r tag : Which ROOT version (default = v5-34-17).
+                       -r tag : Which ROOT version (default = v5-34-18).
                        -n     : Run configure, build, etc. under nice.
                        -m     : Use \"make\" instead of \"gmake\" to build.
                        -f     : Archive current build and start fresh.
