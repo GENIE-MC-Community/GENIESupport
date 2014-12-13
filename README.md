@@ -9,7 +9,7 @@ Running the script with no arguments will produce the help menu:
 
     Usage: ./build_support -<flag>
                            -p  #  : Build Pythia 6 or 8 and link ROOT to it (required).
-                           -r tag : Which ROOT version (default = v5-34-08).
+                           -r tag : Which ROOT version (default = v5-34-18).
                            -n     : Run configure, build, etc. under nice.
                            -m     : Build using "make" instead of "gmake".
                            -f     : Archive build directories and start fresh.
@@ -17,7 +17,7 @@ Running the script with no arguments will produce the help menu:
      
       Examples:  
         ./build_supprt -p 6
-        ./build_supprt -p 8 -r v5-34-12
+        ./build_supprt -p 8 -r v5-34-18
 
 # Trouble-Shooting
 
