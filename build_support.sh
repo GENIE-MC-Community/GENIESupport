@@ -33,8 +33,8 @@ PYTHIASRC=pythia8183.tgz          # only if we use Pythia8.
 GSLSRC=gsl-1.16.tar.gz
 ROOTTAG="v5-34-18"
 LOG4CPPSRC=log4cpp-1.1.1.tar.gz       
-LHAPDFSRC=lhapdf-5.9.1.tar.gz
 LHAPDFSRC=LHAPDF-6.1.4.tar.gz
+LHAPDFSRC=lhapdf-5.9.1.tar.gz
 LHAPDFMAJOR=`echo $LHAPDFSRC | cut -c8-8` # expecting 'lhapdf-M.', etc.
 BOOSTSRC=boost_1_56_0.tar.gz
 BOOSTVER=`echo $BOOSTSRC | python -c "import sys;t=sys.stdin.readline().split('.')[0].split('_');print '%s.%s.%s'%(t[1],t[2],t[3])"`
@@ -56,17 +56,16 @@ BUILD_GSL="yes"
 BUILD_ROOT="yes"
 BUILD_LOG4CPP="yes"
 BUILD_BOOST="yes"   # set to `yes` for LHAPDF 6+
-BUILD_LHAPDF="no"
-GET_PDFS="no"     # for lhapdf
-BUILD_ROOMU="no"
+BUILD_LHAPDF="yes"
+GET_PDFS="yes"     # for lhapdf
+BUILD_ROOMU="yes"
 
 ADD_PYTHIA_ENV=$BUILD_PYTHIA
 ADD_GSL_ENV=$BUILD_GSL
 ADD_ROOT_ENV=$BUILD_ROOT
 ADD_LOG4CPP_ENV=$BUILD_LOG4CPP
 ADD_BOOST_ENV=$BUILD_BOOST
-ADD_LHAPDF_ENV="yes"
-ADD_ROOMU_ENV=$BUILD_ROOMU
+ADD_LHAPDF_ENV=$BUILD_LHAPDF
 
 #-----------------------------------------------------
 # Begin work...
@@ -481,11 +480,13 @@ dobuild()
     else
       echo "Using pre-built boost..."
     fi
-    mypush $BOOSTROOT/$BOOSTDIR
-    BOOST_ROOT=`pwd`
-    mypop
-    echo "Boost root is $BOOST_ROOT..."
-    echo "export BOOST_ROOT=$BOOST_ROOT" >> $ENVFILE
+    if [ "$ADD_BOOST_ENV" == "yes" ]; then
+      mypush $BOOSTROOT/$BOOSTDIR
+      BOOST_ROOT=`pwd`
+      mypop
+      echo "Boost root is $BOOST_ROOT..."
+      echo "export BOOST_ROOT=$BOOST_ROOT" >> $ENVFILE
+    fi
   fi  # if LHAPDF is C++ (6+)
 
   LHAPDFDIR=`basename ${LHAPDFSRC} .tar.gz`
@@ -507,11 +508,14 @@ dobuild()
       if [ $LHAPDFMAJOR -gt 5 ]; then
         WITHBOOST="--with-boost=$BOOST_ROOT"
       fi
-      $NICE ./configure --prefix=$LHAINST $WITHBOOST >& log.config
+      # $NICE ./configure --prefix=$LHAINST $WITHBOOST >& log.config
+      exec_package_comm "$NICE ./configure --prefix=$LHAINST $WITHBOOST" "log.config"
       echo "Running make in $PWD..."
-      $NICE $MAKE >& log.make
+      # $NICE $MAKE >& log.make
+      exec_package_comm "$NICE $MAKE" "log.make"
       echo "Running make install in $PWD..."
-      $NICE $MAKE install >& log.install
+      # $NICE $MAKE install >& log.install
+      exec_package_comm "$NICE $MAKE install" "log.install"
       mypop
       mypop
       echo "Finished building LHAPDF..."
@@ -521,21 +525,23 @@ dobuild()
   else
     echo "Using pre-built LHAPDF..."
   fi
-  mypush $LHAPDFROOT
-  LHAPATH=`pwd`
-  mypop
-  mypush $LHAPDFROOT/lib
-  LHAPDF_LIB=`pwd`
-  mypop
-  mypush $LHAPDFROOT/include
-  LHAPDF_INC=`pwd`
-  mypop
-  echo "LHAPDF lib is $LHAPDF_LIB..."
-  echo "LHAPDF inc is $LHAPDF_INC..."
-  echo "export LHAPATH=$LHAPATH" >> $ENVFILE
-  echo "export LHAPDF_INC=$LHAPDF_INC" >> $ENVFILE
-  echo "export LHAPDF_LIB=$LHAPDF_LIB" >> $ENVFILE
-  echo "export LD_LIBRARY_PATH=${LHAPDF_LIB}:\$LD_LIBRARY_PATH" >> $ENVFILE
+  if [ "$ADD_LHAPDF_ENV" == "yes" ]; then
+    mypush $LHAPDFROOT
+    LHAPATH=`pwd`
+    mypop
+    mypush $LHAPDFROOT/lib
+    LHAPDF_LIB=`pwd`
+    mypop
+    mypush $LHAPDFROOT/include
+    LHAPDF_INC=`pwd`
+    mypop
+    echo "LHAPDF lib is $LHAPDF_LIB..."
+    echo "LHAPDF inc is $LHAPDF_INC..."
+    echo "export LHAPATH=$LHAPATH" >> $ENVFILE
+    echo "export LHAPDF_INC=$LHAPDF_INC" >> $ENVFILE
+    echo "export LHAPDF_LIB=$LHAPDF_LIB" >> $ENVFILE
+    echo "export LD_LIBRARY_PATH=${LHAPDF_LIB}:\$LD_LIBRARY_PATH" >> $ENVFILE
+  fi
   if [ "$GET_PDFS" == "yes" ]; then
     echo "Getting PDFs..."
     mypush $LHAPDFROOT/bin
@@ -544,6 +550,7 @@ dobuild()
       if [ ! -f $LHAPATH/$pdf ]; then
         echo "...Getting $pdf..."
         $NICE ./lhapdf-getdata $pdf --dest=$LHAPATH
+        check_status $?
       else
         echo "$pdf is already present..."
       fi
@@ -577,10 +584,14 @@ dobuild()
       export ROOTSYS=$ROOTSYS
       export LD_LIBRARY_PATH=${ROOTSYS}/lib:$LD_LIBRARY_PATH
       mypush PlotUtils
-      $NICE $MAKE >& log.make
+      echo "Building PlotUtils in $PWD..."
+      # $NICE $MAKE >& log.make
+      exec_package_comm "$NICE $MAKE" "log.make"
       mypop
       mypush macros
-      $NICE $MAKE >& log.make
+      echo "Building macros in $PWD..."
+      # $NICE $MAKE >& log.make
+      exec_package_comm "$NICE $MAKE" "log.make"
       mypop
       mypop
     else
