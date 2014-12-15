@@ -8,7 +8,9 @@ branch like so:
 
     git checkout -b R-2_8_6.2-br R-2_8_6.2
 
-This will checkout _tag_ `R-2_8_6.2` into _branch_ `R-2_8_6.2-br`.
+This will checkout _tag_ `R-2_8_6.2` into _branch_ `R-2_8_6.2-br`. You want to
+checkout into a branch so you are not in a "detached `HEAD`" state.
+
 
 ## Current tags
 
