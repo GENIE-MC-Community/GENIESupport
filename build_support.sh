@@ -77,7 +77,7 @@ mypush()
   pushd $1 >& /dev/null 
   if [ $? -ne 0 ]; then
     echo "Error! Directory $1 does not exist."
-    exit 0
+    exit 1
   fi
 }
 
@@ -131,7 +131,7 @@ getcode()
 badpythia()
 {
   echo "Illegal version of Pythia! Only 6 or 8 are accepted."
-  exit 0
+  exit 1
 }
 
 # echo if the arg was already built
@@ -191,7 +191,7 @@ dobuild()
       echo "Please put a tarball of the ROOT code in the archive directory: "
       echo "   $ARCHIVE" 
       echo "named: root.tgz"
-      exit 0
+      exit 1
     fi
   fi
   WGET=`which wget`
