@@ -19,6 +19,16 @@ Running the script with no arguments will produce the help menu:
         ./build_supprt -p 6
         ./build_supprt -p 8 -r v5-34-18
 
+## Tags and versioning
+
+When first checking out this package, you will have the `HEAD` version of the
+`master` branch. Get a specific tagged release by checking out the tag into a
+branch like so:
+
+    git checkout -b R-2_8_6.1-br R-2_8_6.1
+
+This will checkout _tag_ `R-2_8_6.1` into _branch_ `R-2_8_6.1-br`.
+
 # Trouble-Shooting
 
 This is a bash script, so some errors will likely occur under different
