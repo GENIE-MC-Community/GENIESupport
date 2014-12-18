@@ -2,7 +2,9 @@
 
 It is a good idea to use a tagged version of GENIESupport. The latest
 recommended tag is `R-2_8_6.3`. Use the following command to check
-it out (and read below for more if you're really interested).
+it out (and read below for more if you're really interested). After
+cloning the repository, `cd` into the `GENIESupport` directory and
+run:
 
     git checkout -b R-2_8_6.3-br R-2_8_6.3
 
