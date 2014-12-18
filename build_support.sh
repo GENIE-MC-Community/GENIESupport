@@ -610,18 +610,59 @@ dobuild()
   mybr
 }
 
-while getopts "p:r:fhmnsv" options; do
-  case $options in
-    p) PYTHIAVER=$OPTARG;;
-    r) ROOTTAG=$OPTARG;;
-    f) FORCEBUILD=1;;
-    h) HELPFLAG=1;;
-    n) MAKENICE=1;;
-    m) MAKE=make;;
-    s) HTTPSCHECKOUT=1;;
-    v) VERBOSE=1;;
+# while getopts "p:r:fhmnsv" options; do
+#   case $options in
+#     p) PYTHIAVER=$OPTARG;;
+#     r) ROOTTAG=$OPTARG;;
+#     f) FORCEBUILD=1;;
+#     h) HELPFLAG=1;;
+#     n) MAKENICE=1;;
+#     m) MAKE=make;;
+#     s) HTTPSCHECKOUT=1;;
+#     v) VERBOSE=1;;
+#   esac
+# done
+#
+# Parse the command line flags.
+#
+while [[ $# > 0 ]]
+do
+  key="$1"
+  shift
+
+  case $key in
+    -h|--help)
+    HELPFLAG=1
+    ;;
+    -p|--pythia)
+    PYTHIAVER="$1"
+    shift
+    ;;
+    -m|--make)
+    MAKE=make
+    ;;
+    -n|--nice)
+    MAKENICE=1
+    ;;
+    -r|--root)
+    ROOTTAG="$1"
+    shift
+    ;;
+    -s|--https)
+    HTTPSCHECKOUT=1
+    ;;
+    -v|--verbose)
+    VERBOSE=1
+    ;;
+    -f|--force)
+    FORCEBUILD=1
+    ;;
+    *)    # Unknown option
+
+    ;;
   esac
 done
+
 
 if [ $PYTHIAVER -eq -1 ]; then
   HELPFLAG=1
