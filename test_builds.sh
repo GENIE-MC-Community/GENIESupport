@@ -56,6 +56,16 @@ test()
     | tee -a $TESTBUILDSLOG
   ./build_support.sh -p $PYTHIAV -r $ROOTV $HTTPFLAG \
     | tee -a $TESTBUILDSLOG
+  if [[ $? != 1 ]]; then
+    echo " "
+    echo " "
+    echo " "
+    echo "The build failed! There was an ERROR = $?!"
+    teardown
+    echo " "
+    echo "Exiting after error!"
+    exit 1
+  fi
   echo "FINISH TEST---------------------------------------------------------" \
     | tee -a $TESTBUILDSLOG
 }
