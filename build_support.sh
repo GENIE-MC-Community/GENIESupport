@@ -44,11 +44,8 @@ PYTHIASRC=pythia8183.tgz          # only if we use Pythia8.
 GSLSRC=gsl-1.16.tar.gz
 ROOTTAG="v5-34-24"
 LOG4CPPSRC=log4cpp-1.1.1.tar.gz       
-LHAPDFSRC=LHAPDF-6.1.4.tar.gz
 LHAPDFSRC=lhapdf-5.9.1.tar.gz
 LHAPDFMAJOR=`echo $LHAPDFSRC | cut -c8-8` # expecting 'lhapdf-M.', etc.
-BOOSTSRC=boost_1_56_0.tar.gz
-BOOSTVER=`echo $BOOSTSRC | python -c "import sys;t=sys.stdin.readline().split('.')[0].split('_');print '%s.%s.%s'%(t[1],t[2],t[3])"`
 
 ENVFILE="environment_setup.sh"
  
@@ -61,12 +58,11 @@ PYTHIAVER=-1         # must eventually be either 6 or 8
 HTTPSCHECKOUT=0      # use https checkout if non-zero (otherwise ssh)
 VERBOSE=0            # send logging data to stdout also
 
-# should we build these packages? - testing variables
+# should we build these packages? 
 BUILD_PYTHIA="yes"
 BUILD_GSL="yes"
 BUILD_ROOT="yes"
 BUILD_LOG4CPP="yes"
-BUILD_BOOST="yes"   # set to `yes` for LHAPDF 6+
 BUILD_LHAPDF="yes"
 GET_PDFS="yes"     # for lhapdf
 BUILD_ROOMU="yes"
@@ -75,7 +71,6 @@ ADD_PYTHIA_ENV=$BUILD_PYTHIA
 ADD_GSL_ENV=$BUILD_GSL
 ADD_ROOT_ENV=$BUILD_ROOT
 ADD_LOG4CPP_ENV=$BUILD_LOG4CPP
-ADD_BOOST_ENV=$BUILD_BOOST
 ADD_LHAPDF_ENV=$BUILD_LHAPDF
 
 #-----------------------------------------------------
@@ -231,9 +226,6 @@ dobuild()
   fi
   if [ "$BUILD_LOG4CPP" == "yes" ]; then
     echo "Will try to build log4cpp..."
-  fi
-  if [ "$BUILD_BOOST" == "yes" ]; then
-    echo "Will try to build boost..."
   fi
   if [ "$BUILD_LHAPDF" == "yes" ];  then
     echo "Will try to build LHAPDF..."
@@ -465,41 +457,6 @@ dobuild()
     echo "export LD_LIBRARY_PATH=${LOG4CPP_LIB}:\$LD_LIBRARY_PATH" >> $ENVFILE
   fi
 
-  if [ $LHAPDFMAJOR -gt 5 ]; then
-    BOOSTDIR=`basename ${BOOSTSRC} .tar.gz`
-    BOOSTROOT=boost
-    mybr
-    if [ "$BUILD_BOOST" == "yes" ]; then
-      mymkarch $BOOSTROOT
-      if [ ! -d $BOOSTROOT ]; then
-        echo "Making installation directories for boost..."
-        mkdir $BOOSTROOT
-        mypush $BOOSTROOT
-        echo "Building boost $BOOSTVER in $PWD..."
-        BOOSTINST=`pwd`
-        echo "Boost install directory is $BOOSTINST..."
-        getcode $BOOSTSRC http://sourceforge.net/projects/boost/files/boost/${BOOSTVER} download
-        mypush $BOOSTDIR
-        echo "Header-only libraries! Not building anything..."
-        echo "  But if we were to build anything for boost, we would do it here..."
-        mypop
-        mypop
-        echo "Finished building boost..."
-      else
-        allreadybuilt "boost"
-      fi
-    else
-      echo "Using pre-built boost..."
-    fi
-    if [ "$ADD_BOOST_ENV" == "yes" ]; then
-      mypush $BOOSTROOT/$BOOSTDIR
-      BOOST_ROOT=`pwd`
-      mypop
-      echo "Boost root is $BOOST_ROOT..."
-      echo "export BOOST_ROOT=$BOOST_ROOT" >> $ENVFILE
-    fi
-  fi  # if LHAPDF is C++ (6+)
-
   LHAPDFDIR=`basename ${LHAPDFSRC} .tar.gz`
   LHAPDFROOT=lhapdf
   mybr
@@ -515,17 +472,10 @@ dobuild()
       getcode $LHAPDFSRC "http://www.hepforge.org/archive/lhapdf"
       mypush $LHAPDFDIR
       echo "Running configure in $PWD..."
-      WITHBOOST=""
-      if [ $LHAPDFMAJOR -gt 5 ]; then
-        WITHBOOST="--with-boost=$BOOST_ROOT"
-      fi
-      # $NICE ./configure --prefix=$LHAINST $WITHBOOST >& log.config
-      exec_package_comm "$NICE ./configure --prefix=$LHAINST $WITHBOOST" "log.config"
+      exec_package_comm "$NICE ./configure --prefix=$LHAINST" "log.config"
       echo "Running make in $PWD..."
-      # $NICE $MAKE >& log.make
       exec_package_comm "$NICE $MAKE" "log.make"
       echo "Running make install in $PWD..."
-      # $NICE $MAKE install >& log.install
       exec_package_comm "$NICE $MAKE install" "log.install"
       mypop
       mypop
@@ -570,6 +520,9 @@ dobuild()
     if [ $LHAPDFMAJOR -eq 5 ]; then
       echo "Installing the patched GRV98lo file from the archive."
       cp -b archive/GRV98lo_pdflib.LHgrid $LHAPATH/GRV98lo_patched.LHgrid
+    else
+      echo "ERROR! Unsupported LHAPDF!"
+      exit 1
     fi
     echo "Finished getting PDFs..."
   else
@@ -621,18 +574,6 @@ dobuild()
   mybr
 }
 
-# while getopts "p:r:fhmnsv" options; do
-#   case $options in
-#     p) PYTHIAVER=$OPTARG;;
-#     r) ROOTTAG=$OPTARG;;
-#     f) FORCEBUILD=1;;
-#     h) HELPFLAG=1;;
-#     n) MAKENICE=1;;
-#     m) MAKE=make;;
-#     s) HTTPSCHECKOUT=1;;
-#     v) VERBOSE=1;;
-#   esac
-# done
 #
 # Parse the command line flags.
 #
