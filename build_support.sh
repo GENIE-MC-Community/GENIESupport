@@ -6,17 +6,23 @@ help()
   mybr
 cat <<EOF
 Usage: ./build_support -<flag>
-                       -h     : print the help menu
-                       -p  #  : Pythia 6 or 8 and link ROOT to it (required).
-                       -r tag : Which ROOT version (default = v5-34-18).
-                       -n     : Run configure, build, etc. under nice.
-                       -m     : Use \"make\" instead of \"gmake\" to build.
-                       -f     : Archive current build and start fresh.
-                       -s     : Use https for GitHub checkout (default is ssh)
-                       -v     : Print logging data to stdout during installation
+                   -h / --help     : print the help menu
+                   -p / --pythia # : Pythia 6 or 8 and link ROOT to it (required).
+                   -r / --root tag : Which ROOT version (default = v5-34-24).
+                   -n / --nice     : Run configure, build, etc. under nice.
+                   -m / --make     : Use \"make\" instead of \"gmake\" to build.
+                   -f / --force    : Archive current build and start fresh.
+                   -s / --https    : Use https for GitHub checkout (default is ssh)
+                   -v / --verbose  : Print logging data to stdout during installation
  
   Examples:  
-    ./build_support -p 6
+    ./build_support                   # do nothing; print the help menu
+    ./build_support -h                # do nothing; print the help menu
+    ./build_support --help            # do nothing; print the help menu
+    ./build_support -p 6              # build Pythia 6, gmake, ssh checkout, ROOT v5-34-24
+    ./build_support -p 6 -v           # same with verbose logging
+    ./build_support -p 6 -v -n        # same building under `nice`
+    ./build_support --pythia 6
     ./build_support -p 8 -r v5-34-18
 EOF
   mybr
@@ -31,7 +37,7 @@ PDFLIST="GRV98lo.LHgrid GRV98nlo.LHgrid"
 # we can't curl it (I think - maybe someone can).
 PYTHIASRC=pythia8183.tgz          # only if we use Pythia8.
 GSLSRC=gsl-1.16.tar.gz
-ROOTTAG="v5-34-18"
+ROOTTAG="v5-34-24"
 LOG4CPPSRC=log4cpp-1.1.1.tar.gz       
 LHAPDFSRC=LHAPDF-6.1.4.tar.gz
 LHAPDFSRC=lhapdf-5.9.1.tar.gz

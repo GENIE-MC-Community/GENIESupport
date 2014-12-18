@@ -8,16 +8,24 @@ carefully.
 Running the script with no arguments will produce the help menu:
 
     Usage: ./build_support -<flag>
-                           -p  #  : Build Pythia 6 or 8 and link ROOT to it (required).
-                           -r tag : Which ROOT version (default = v5-34-18).
-                           -n     : Run configure, build, etc. under nice.
-                           -m     : Build using "make" instead of "gmake".
-                           -f     : Archive build directories and start fresh.
-                           -s     : Use https to check out from GitHub (default is ssh)
+                       -h / --help     : print the help menu
+                       -p / --pythia # : Pythia 6 or 8 and link ROOT to it (required).
+                       -r / --root tag : Which ROOT version (default = v5-34-24).
+                       -n / --nice     : Run configure, build, etc. under nice.
+                       -m / --make     : Use \"make\" instead of \"gmake\" to build.
+                       -f / --force    : Archive current build and start fresh.
+                       -s / --https    : Use https for GitHub checkout (default is ssh)
+                       -v / --verbose  : Print logging data to stdout during installation
      
       Examples:  
-        ./build_supprt -p 6
-        ./build_supprt -p 8 -r v5-34-18
+        ./build_support                   # do nothing; print the help menu
+        ./build_support -h                # do nothing; print the help menu
+        ./build_support --help            # do nothing; print the help menu
+        ./build_support -p 6              # build Pythia 6, gmake, ssh checkout, ROOT v5-34-24
+        ./build_support -p 6 -v           # same with verbose logging
+        ./build_support -p 6 -v -n        # same building under `nice`
+        ./build_support --pythia 6
+        ./build_support -p 8 -r v5-34-18
 
 ## Tags and versioning
 
