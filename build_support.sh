@@ -14,6 +14,11 @@ Usage: ./build_support -<flag>
                    -f / --force    : Archive current build and start fresh.
                    -s / --https    : Use https for GitHub checkout (default is ssh)
                    -v / --verbose  : Print logging data to stdout during installation
+                --root-path PATH   : Do not build ROOT, but instead point at this PATH
+                --pythia-path PATH : Do not build PYTHIA, but instead point at this PATH
+                --gsl-path PATH    : Do not build GSL, but instead point at this PATH
+                --lhapdf-path PATH : Do not build LHAPDF5, but instead point at this PATH
+                --roomu-path PATH  : Do not build RooMUHistos, but instead point at this PATH
  
   Examples:  
     ./build_support                   # do nothing; print the help menu
