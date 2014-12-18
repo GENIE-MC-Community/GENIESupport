@@ -21,7 +21,7 @@ Usage: ./build_support -<flag>
     ./build_support --help            # do nothing; print the help menu
     ./build_support -p 6              # build Pythia 6, gmake, ssh checkout, ROOT v5-34-24
     ./build_support -p 6 -v           # same with verbose logging
-    ./build_support -p 6 -v -n        # same building under `nice`
+    ./build_support -p 6 -v -n        # same building under \"nice\"
     ./build_support --pythia 6
     ./build_support -p 8 -r v5-34-18
 EOF
