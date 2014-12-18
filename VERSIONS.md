@@ -14,6 +14,8 @@ checkout into a branch so you are not in a "detached `HEAD`" state.
 
 ## Current tags
 
+* `R-2_8_6.3-last-LHAPDF6`: Minor changes to `R-2_8_6.3` (new command argument
+parsing, documentation); Last tag to support building LHAPDF6 and Boost.
 * `R-2_8_6.3`: Add a test script to check a few different build permutations 
 and flags.
 * `R-2_8_6.2`: Add a verbose flag to also print log info to stdout; check for 
