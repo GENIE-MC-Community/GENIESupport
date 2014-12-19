@@ -619,6 +619,21 @@ if [ $HELPFLAG -ne 0 ]; then
   exit 0
 fi
 mybr
+echo " "
+echo "Welcome to the GENIE 3rd party support code build script."
+echo " "
+echo " OS Information: "
+if [[ `which lsb_release` != "" ]]; then
+  echo `lsb_release -a`
+elif [[ -e "/etc/lsb-release" ]]; then
+  cat /etc/lsb-release
+elif [[ -e "/etc/issue.net" ]]; then
+  cat /etc/issue.net
+else
+  echo " Missing information on Linux distribution..."
+fi
+uname -a
+mybr
 echo "Selected Pythia Version is $PYTHIAVER..."
 if [ $PYTHIAVER -ne 6 -a $PYTHIAVER -ne 8 ]; then
   badpythia
@@ -632,4 +647,5 @@ else
   GITCHECKOUT="git@github.com:"
 fi
 
+# Build the code
 dobuild
