@@ -288,6 +288,7 @@ dobuild()
         if [[ ! -e build_pythia6.sh ]]; then
           echo "ERROR! Could not copy the build_pythia6.sh script to this area!"
           echo "  cp status = $COPYSTATUS"
+          ls $ARCHIVE
           exit 1
         fi 
         echo "Running the script in $PWD..."
