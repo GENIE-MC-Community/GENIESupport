@@ -284,6 +284,10 @@ dobuild()
         pushd $PYTHIADIR
         echo "Getting script in $PWD..."
         cp -v ${ARCHIVE}/build_pythia6.sh .
+        if [[ ! -e build_pythia6.sh ]]; then
+          echo "ERROR! Could not copy the build_pythia6.sh script to this area!"
+          exit 1
+        fi 
         echo "Running the script in $PWD..."
         exec_package_comm "./build_pythia6.sh" "log.pythia6"        
         rm build_pythia6.sh 
