@@ -100,10 +100,10 @@ mymkarch()
   if [ -d $1 ]; then
     if [ $FORCEBUILD -ne 0 ]; then
       echo "Tarring old directory..."
-      mv $1 ${DAT}$1
+      mv -v $1 ${DAT}$1
       tar -cvzf ${DAT}${1}.tgz ${DAT}${1} >& /dev/null
       rm -rf ${DAT}${1}
-      mv ${DAT}$1.tgz $ARCHIVE
+      mv -v ${DAT}$1.tgz $ARCHIVE
     fi
   fi
 }
@@ -112,9 +112,9 @@ getcode()
 {
   if [ -f $ARCHIVE/$1 ]; then
     echo "Retrieving code from archive..."
-    mv $ARCHIVE/$1 .
+    mv -v $ARCHIVE/$1 .
     tar -xvzf $1 >& /dev/null
-    mv $1 $ARCHIVE
+    mv -v $1 $ARCHIVE
   else
     echo "Downloading code from the internet..."
     if [ $# -eq 2 ]; then
@@ -124,7 +124,7 @@ getcode()
       # $WGET $2/$1/$3 >& /dev/null  # for boost, basically
     fi
     tar -xvzf $1 >& /dev/null
-    mv $1 $ARCHIVE
+    mv -v $1 $ARCHIVE
   fi
 }
 
@@ -180,8 +180,8 @@ dobuild()
 
   # start the environment setup file. archive the old one first.
   if [ -f $ENVFILE ]; then
-    mv $ENVFILE ${DAT}$ENVFILE
-    mv ${DAT}$ENVFILE $ARCHIVE
+    mv -v $ENVFILE ${DAT}$ENVFILE
+    mv -v ${DAT}$ENVFILE $ARCHIVE
   fi
   echo -e "\043\041/bin/bash" > $ENVFILE
 
@@ -206,7 +206,7 @@ dobuild()
   mybr
   if [ "$BUILD_PYTHIA" == "yes" ]; then
     if [ $PYTHIAVER -eq 8 ]; then
-      echo "Will try to build Pythia8..."
+      echo "Will try to build Pythia8 using $PYTHIASRC..."
     elif [ $PYTHIAVER -eq 6 ]; then
       echo "Will try to build Pythia6..."
     else
@@ -214,19 +214,19 @@ dobuild()
     fi
   fi
   if [ "$BUILD_GSL" == "yes" ]; then
-    echo "Will try to build GSL..."
+    echo "Will try to build GSL using $GSLSRC..."
   fi
   if [ "$BUILD_ROOT" == "yes" ]; then
-    echo "Will try to build ROOT..."
+    echo "Will try to build ROOT using version $ROOTTAG..."
   fi
   if [ "$BUILD_LOG4CPP" == "yes" ]; then
-    echo "Will try to build log4cpp..."
+    echo "Will try to build log4cpp using $LOG4CPPSRC..."
   fi
   if [ "$BUILD_LHAPDF" == "yes" ];  then
-    echo "Will try to build LHAPDF..."
+    echo "Will try to build LHAPDF using $LHAPDFSRC..."
   fi
   if [ "$BUILD_ROOMU" == "yes" ];  then
-    echo "Will try to build RooMUHistos..."
+    echo "Will try to build RooMUHistos using GitHub HEAD..."
   fi
 
   if [ $MAKENICE -ne 0 ]; then
@@ -283,7 +283,7 @@ dobuild()
         mkdir $PYTHIADIR
         pushd $PYTHIADIR
         echo "Getting script in $PWD..."
-        cp ${ARCHIVE}/build_pythia6.sh .
+        cp -v ${ARCHIVE}/build_pythia6.sh .
         echo "Running the script in $PWD..."
         exec_package_comm "./build_pythia6.sh" "log.pythia6"        
         rm build_pythia6.sh 
@@ -359,9 +359,9 @@ dobuild()
       if [ -f $ARCHIVE/root.tgz ]; then
         echo "Retrieving code from archive..."
         echo " We will not be adjusting the tag!"
-        mv $ARCHIVE/root.tgz .
+        mv -v $ARCHIVE/root.tgz .
         tar -xvzf $1 >& /dev/null
-        mv root.tgz $ARCHIVE
+        mv -v root.tgz $ARCHIVE
         mypush root
       else
         echo "Downloading code from the internet..."
@@ -409,15 +409,15 @@ dobuild()
       echo "Building log4cpp in $PWD..."
       if [ -f $ARCHIVE/$LOG4CPPSRC ]; then
         echo "Retrieving code from archive..."
-        mv $ARCHIVE/$LOG4CPPSRC .
+        mv -v $ARCHIVE/$LOG4CPPSRC .
         tar -xvzf $LOG4CPPSRC >& /dev/null 
-        mv $LOG4CPPSRC $ARCHIVE
+        mv -v $LOG4CPPSRC $ARCHIVE
         mypush $LOG4CPPDIR
       else
         echo "Using the log4cpp code present here..."
         tar -xvzf $LOG4CPPSRC >& /dev/null 
         echo "Archiving the log4cpp tarball. Look for it in $ARCHIVE..."
-        mv $LOG4CPPSRC $ARCHIVE
+        mv -v $LOG4CPPSRC $ARCHIVE
         mypush $LOG4CPPDIR
       fi
       echo "Running autogen in $PWD..."
