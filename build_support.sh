@@ -624,7 +624,7 @@ echo "Welcome to the GENIE 3rd party support code build script."
 echo " "
 echo " OS Information: "
 if [[ `which lsb_release` != "" ]]; then
-  echo `lsb_release -a`
+  lsb_release -a
 elif [[ -e "/etc/lsb-release" ]]; then
   cat /etc/lsb-release
 elif [[ -e "/etc/issue.net" ]]; then
