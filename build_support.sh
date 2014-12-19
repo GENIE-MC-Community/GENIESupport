@@ -284,8 +284,10 @@ dobuild()
         pushd $PYTHIADIR
         echo "Getting script in $PWD..."
         cp -v ${ARCHIVE}/build_pythia6.sh .
+        COPYSTATUS=$?
         if [[ ! -e build_pythia6.sh ]]; then
           echo "ERROR! Could not copy the build_pythia6.sh script to this area!"
+          echo "  cp status = $COPYSTATUS"
           exit 1
         fi 
         echo "Running the script in $PWD..."
