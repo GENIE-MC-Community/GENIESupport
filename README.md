@@ -1,4 +1,19 @@
-# Basic Usage
+# READ ME FIRST!
+
+It is a good idea to use a tagged version of GENIESupport. The latest
+recommended tag is `R-2_8_6.3`. Use the following command to check
+it out (and read below for more if you're really interested). After
+cloning the repository, `cd` into the `GENIESupport` directory and
+run:
+
+    git checkout -b R-2_8_6.3-br R-2_8_6.3
+
+Run `./build_support.sh -h` to get a help menu. If you run into trouble,
+please consult the "Trouble-Shooting" section below. If you find a 
+bug, please feel free to contact Gabe Perdue (`perdue` at Fermilab)
+or open an issue on [GitHub](https://github.com/GENIEMC/GENIESupport).
+
+## Basic Usage
 
 This script will install the required third party packages to build GENIE 
 from source. It has been thoroughly tested on Scientific Linux 5 only. Some
@@ -7,19 +22,38 @@ carefully.
 
 Running the script with no arguments will produce the help menu:
 
-    Usage: ./build_support -<flag>
-                           -p  #  : Build Pythia 6 or 8 and link ROOT to it (required).
-                           -r tag : Which ROOT version (default = v5-34-08).
-                           -n     : Run configure, build, etc. under nice.
-                           -m     : Build using "make" instead of "gmake".
-                           -f     : Archive build directories and start fresh.
-                           -s     : Use https to check out from GitHub (default is ssh)
+    Usage: ./build_support.sh -<flag>
+                       -h / --help     : print the help menu
+                       -p / --pythia # : Pythia 6 or 8 and link ROOT to it (required).
+                       -r / --root tag : Which ROOT version (default = v5-34-24).
+                       -n / --nice     : Run configure, build, etc. under nice.
+                       -m / --make     : Use "make" instead of "gmake" to build.
+                       -f / --force    : Archive current build and start fresh.
+                       -s / --https    : Use https for GitHub checkout (default is ssh)
+                       -v / --verbose  : Print logging data to stdout during installation
      
       Examples:  
-        ./build_supprt -p 6
-        ./build_supprt -p 8 -r v5-34-12
+        ./build_support.sh                   # do nothing; print the help menu
+        ./build_support.sh -h                # do nothing; print the help menu
+        ./build_support.sh --help            # do nothing; print the help menu
+        ./build_support.sh -p 6              # build Pythia 6, gmake, ssh checkout, ROOT v5-34-24
+        ./build_support.sh -p 6 -v           # same with verbose logging
+        ./build_support.sh -p 6 -v -n        # same building under "nice"
+        ./build_support.sh --pythia 6
+        ./build_support.sh -p 8 -r v5-34-18
 
-# Trouble-Shooting
+## Tags and versioning
+
+When first checking out this package, you will have the `HEAD` version of the
+`master` branch. Get a specific tagged release by checking out the tag into a
+branch like so:
+
+    git checkout -b R-2_8_6.3-br R-2_8_6.3
+
+This will checkout _tag_ `R-2_8_6.3` into _branch_ `R-2_8_6.3-br`. You want to
+checkout into a branch so you are not in a "detached `HEAD`" state.
+
+## Trouble-Shooting
 
 This is a bash script, so some errors will likely occur under different
 shells. If you get errors, make sure `/bin/bash` exists and is not a 
@@ -47,7 +81,8 @@ ssh (because it was easier for me to configure at Fermilab). If you run
 into "permission denied" errors, try using the `https` checkout flag,
 `-s` and see if that works.
 
-# To-Do
+## Contributors
 
-Build support is included for LHAPDF 6, but installation flags are not
-exposed yet. We need to settle on a new PDF set first.
+* Gabriel Perdue,  [Fermilab](http://www.fnal.gov)
+* Julia Yarba,     [Fermilab](http://www.fnal.gov)
+

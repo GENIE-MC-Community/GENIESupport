@@ -1,5 +1,34 @@
 #!/bin/bash
 
+# how to use the script - don't autoindent above the `cat`s below!
+help()
+{
+  mybr
+cat <<EOF
+Usage: ./build_support -<flag>
+                   -h / --help     : print the help menu
+                   -p / --pythia # : Pythia 6 or 8 and link ROOT to it (required).
+                   -r / --root tag : Which ROOT version (default = v5-34-24).
+                   -n / --nice     : Run configure, build, etc. under nice.
+                   -m / --make     : Use \"make\" instead of \"gmake\" to build.
+                   -f / --force    : Archive current build and start fresh.
+                   -s / --https    : Use https for GitHub checkout (default is ssh)
+                   -v / --verbose  : Print logging data to stdout during installation
+ 
+  Examples:  
+    ./build_support                   # do nothing; print the help menu
+    ./build_support -h                # do nothing; print the help menu
+    ./build_support --help            # do nothing; print the help menu
+    ./build_support -p 6              # build Pythia 6, gmake, ssh checkout, ROOT v5-34-24
+    ./build_support -p 6 -v           # same with verbose logging
+    ./build_support -p 6 -v -n        # same building under \"nice\"
+    ./build_support --pythia 6
+    ./build_support -p 8 -r v5-34-18
+EOF
+  mybr
+  echo " "
+}
+
 # Users need to edit this list by hand...
 PDFLIST="GRV98lo.LHgrid GRV98nlo.LHgrid"
 
@@ -8,13 +37,10 @@ PDFLIST="GRV98lo.LHgrid GRV98nlo.LHgrid"
 # we can't curl it (I think - maybe someone can).
 PYTHIASRC=pythia8183.tgz          # only if we use Pythia8.
 GSLSRC=gsl-1.16.tar.gz
-ROOTTAG="v5-34-18"
+ROOTTAG="v5-34-24"
 LOG4CPPSRC=log4cpp-1.1.1.tar.gz       
-LHAPDFSRC=LHAPDF-6.1.4.tar.gz
 LHAPDFSRC=lhapdf-5.9.1.tar.gz
 LHAPDFMAJOR=`echo $LHAPDFSRC | cut -c8-8` # expecting 'lhapdf-M.', etc.
-BOOSTSRC=boost_1_56_0.tar.gz
-BOOSTVER=`echo $BOOSTSRC | python -c "import sys;t=sys.stdin.readline().split('.')[0].split('_');print '%s.%s.%s'%(t[1],t[2],t[3])"`
 
 ENVFILE="environment_setup.sh"
  
@@ -25,39 +51,26 @@ HELPFLAG=0           # show the help block (if non-zero)
 FORCEBUILD=0         # non-zero will archive existing packages and rebuild
 PYTHIAVER=-1         # must eventually be either 6 or 8
 HTTPSCHECKOUT=0      # use https checkout if non-zero (otherwise ssh)
+VERBOSE=0            # send logging data to stdout also
 
-# should we build these packages? - testing variables
+# should we build these packages? 
 BUILD_PYTHIA="yes"
 BUILD_GSL="yes"
 BUILD_ROOT="yes"
 BUILD_LOG4CPP="yes"
-BUILD_BOOST="no"   # set to `yes` for LHAPDF 6+
 BUILD_LHAPDF="yes"
 GET_PDFS="yes"     # for lhapdf
 BUILD_ROOMU="yes"
 
+ADD_PYTHIA_ENV=$BUILD_PYTHIA
+ADD_GSL_ENV=$BUILD_GSL
+ADD_ROOT_ENV=$BUILD_ROOT
+ADD_LOG4CPP_ENV=$BUILD_LOG4CPP
+ADD_LHAPDF_ENV=$BUILD_LHAPDF
 
 #-----------------------------------------------------
 # Begin work...
 
-# how to use the script
-help()
-{
-  mybr
-  echo "Usage: ./build_support -<flag>"
-  echo "                       -p  #  : Build Pythia 6 or 8 and link ROOT to it (required)."
-  echo "                       -r tag : Which ROOT version (default = v5-34-17)."
-  echo "                       -n     : Run configure, build, etc. under nice."
-  echo "                       -m     : Use \"make\" instead of \"gmake\" to build."
-  echo "                       -f     : Archive current build and start fresh."
-  echo "                       -s     : Use https to check out from GitHub (default is ssh)"
-  echo " "
-  echo "  Examples:  "
-  echo "    ./build_support -p 6"
-  echo "    ./build_support -p 8 -r v5-34-18"
-  mybr
-  echo " "
-}
 
 # quiet pushd
 mypush() 
@@ -65,7 +78,7 @@ mypush()
   pushd $1 >& /dev/null 
   if [ $? -ne 0 ]; then
     echo "Error! Directory $1 does not exist."
-    exit 0
+    exit 1
   fi
 }
 
@@ -78,7 +91,7 @@ mypop()
 # uniformly printed "subject" breaks
 mybr()
 {
-  echo "----------------------------------------"
+  echo "------------------------------------------------------------------------------"
 }
 
 # save a copy of the install if it already exists
@@ -87,10 +100,10 @@ mymkarch()
   if [ -d $1 ]; then
     if [ $FORCEBUILD -ne 0 ]; then
       echo "Tarring old directory..."
-      mv $1 ${DAT}$1
+      mv -v $1 ${DAT}$1
       tar -cvzf ${DAT}${1}.tgz ${DAT}${1} >& /dev/null
       rm -rf ${DAT}${1}
-      mv ${DAT}$1.tgz $ARCHIVE
+      mv -v ${DAT}$1.tgz $ARCHIVE
     fi
   fi
 }
@@ -99,9 +112,9 @@ getcode()
 {
   if [ -f $ARCHIVE/$1 ]; then
     echo "Retrieving code from archive..."
-    mv $ARCHIVE/$1 .
+    mv -v $ARCHIVE/$1 .
     tar -xvzf $1 >& /dev/null
-    mv $1 $ARCHIVE
+    mv -v $1 $ARCHIVE
   else
     echo "Downloading code from the internet..."
     if [ $# -eq 2 ]; then
@@ -111,7 +124,7 @@ getcode()
       # $WGET $2/$1/$3 >& /dev/null  # for boost, basically
     fi
     tar -xvzf $1 >& /dev/null
-    mv $1 $ARCHIVE
+    mv -v $1 $ARCHIVE
   fi
 }
 
@@ -119,7 +132,7 @@ getcode()
 badpythia()
 {
   echo "Illegal version of Pythia! Only 6 or 8 are accepted."
-  exit 0
+  exit 1
 }
 
 # echo if the arg was already built
@@ -128,7 +141,29 @@ allreadybuilt()
   echo "$1 top directory present. Remove or run with force (-f) to rebuild."
 }
 
-# build the packages...
+# build/configure a package
+exec_package_comm()
+{
+  echo "Build command is: $1, and log file is: $2"
+  if [[ $VERBOSE = 1 ]]; then
+    $NICE $1 | tee $2
+  else
+    $NICE $1 >& $2
+  fi
+  check_status $? $1
+}
+
+check_status()
+{
+  if [[ $1 == 0 ]]; then
+    echo " $2: Success!"
+  else
+    echo " $2: Failure!"
+    exit $1
+  fi
+}
+
+# build ALL the packages...
 dobuild()
 {
 
@@ -145,8 +180,8 @@ dobuild()
 
   # start the environment setup file. archive the old one first.
   if [ -f $ENVFILE ]; then
-    mv $ENVFILE ${DAT}$ENVFILE
-    mv ${DAT}$ENVFILE $ARCHIVE
+    mv -v $ENVFILE ${DAT}$ENVFILE
+    mv -v ${DAT}$ENVFILE $ARCHIVE
   fi
   echo -e "\043\041/bin/bash" > $ENVFILE
 
@@ -157,7 +192,7 @@ dobuild()
       echo "Please put a tarball of the ROOT code in the archive directory: "
       echo "   $ARCHIVE" 
       echo "named: root.tgz"
-      exit 0
+      exit 1
     fi
   fi
   WGET=`which wget`
@@ -171,7 +206,7 @@ dobuild()
   mybr
   if [ "$BUILD_PYTHIA" == "yes" ]; then
     if [ $PYTHIAVER -eq 8 ]; then
-      echo "Will try to build Pythia8..."
+      echo "Will try to build Pythia8 using $PYTHIASRC..."
     elif [ $PYTHIAVER -eq 6 ]; then
       echo "Will try to build Pythia6..."
     else
@@ -179,22 +214,19 @@ dobuild()
     fi
   fi
   if [ "$BUILD_GSL" == "yes" ]; then
-    echo "Will try to build GSL..."
+    echo "Will try to build GSL using $GSLSRC..."
   fi
   if [ "$BUILD_ROOT" == "yes" ]; then
-    echo "Will try to build ROOT..."
+    echo "Will try to build ROOT using version $ROOTTAG..."
   fi
   if [ "$BUILD_LOG4CPP" == "yes" ]; then
-    echo "Will try to build log4cpp..."
-  fi
-  if [ "$BUILD_BOOST" == "yes" ]; then
-    echo "Will try to build boost..."
+    echo "Will try to build log4cpp using $LOG4CPPSRC..."
   fi
   if [ "$BUILD_LHAPDF" == "yes" ];  then
-    echo "Will try to build LHAPDF..."
+    echo "Will try to build LHAPDF using $LHAPDFSRC..."
   fi
   if [ "$BUILD_ROOMU" == "yes" ];  then
-    echo "Will try to build RooMUHistos..."
+    echo "Will try to build RooMUHistos using GitHub HEAD..."
   fi
 
   if [ $MAKENICE -ne 0 ]; then
@@ -214,9 +246,9 @@ dobuild()
         getcode $PYTHIASRC "http://home.thep.lu.se/~torbjorn/pythia8"
         mypush $PYTHIADIR
         echo "Running configure in $PWD..."
-        $NICE ./configure --enable-debug --enable-shared >& log.config
+        exec_package_comm "./configure --enable-debug --enable-shared" "log.config"
         echo "Running make in $PWD..."
-        $NICE $MAKE >& log.make
+        exec_package_comm "$MAKE" "log.make"
         mypop
         echo "Finished Pythia..."
       else
@@ -225,20 +257,22 @@ dobuild()
     else 
       echo "Using pre-built Pythia8..."
     fi
-    mypush $PYTHIADIR/lib
-    PYTHIALIBDIR=`pwd`
-    mypop
-    mypush $PYTHIADIR/include
-    PYTHIAINCDIR=`pwd`
-    mypop
-    mypush $PYTHIADIR/xmldoc
-    PYTHIA8DATA=`pwd`
-    mypop
-    echo "Pythia8 lib dir is $PYTHIALIBDIR..."
-    echo "export PYTHIA8=$PYTHIALIBDIR" >> $ENVFILE
-    echo "export PYTHIA8DATA=$PYTHIA8DATA" >> $ENVFILE
-    echo "export PYTHIA8_INC=$PYTHIAINCDIR" >> $ENVFILE
-    echo "export LD_LIBRARY_PATH=${PYTHIALIBDIR}:\$LD_LIBRARY_PATH" >> $ENVFILE
+    if [ "$ADD_PYTHIA_ENV" == "yes" ]; then
+      mypush $PYTHIADIR/lib
+      PYTHIALIBDIR=`pwd`
+      mypop
+      mypush $PYTHIADIR/include
+      PYTHIAINCDIR=`pwd`
+      mypop
+      mypush $PYTHIADIR/xmldoc
+      PYTHIA8DATA=`pwd`
+      mypop
+      echo "Pythia8 lib dir is $PYTHIALIBDIR..."
+      echo "export PYTHIA8=$PYTHIALIBDIR" >> $ENVFILE
+      echo "export PYTHIA8DATA=$PYTHIA8DATA" >> $ENVFILE
+      echo "export PYTHIA8_INC=$PYTHIAINCDIR" >> $ENVFILE
+      echo "export LD_LIBRARY_PATH=${PYTHIALIBDIR}:\$LD_LIBRARY_PATH" >> $ENVFILE
+    fi
   elif [ $PYTHIAVER -eq 6 ]; then
     PYTHIADIR=pythia6
     mybr
@@ -249,10 +283,17 @@ dobuild()
         mkdir $PYTHIADIR
         pushd $PYTHIADIR
         echo "Getting script in $PWD..."
-        mv ${ARCHIVE}/build_pythia6.sh .
+        cp -v ${ARCHIVE}/build_pythia6.sh .
+        COPYSTATUS=$?
+        if [[ ! -e build_pythia6.sh ]]; then
+          echo "ERROR! Could not copy the build_pythia6.sh script to this area!"
+          echo "  cp status = $COPYSTATUS"
+          ls $ARCHIVE
+          exit 1
+        fi 
         echo "Running the script in $PWD..."
-        $NICE ./build_pythia6.sh >& log.pythia6
-        mv build_pythia6.sh $ARCHIVE
+        exec_package_comm "./build_pythia6.sh" "log.pythia6"        
+        rm build_pythia6.sh 
         mypop
         echo "Finished Pythia..."
         mypop
@@ -262,12 +303,14 @@ dobuild()
     else 
       echo "Using pre-built Pythia6..."
     fi
-    mypush $PYTHIADIR/v6_424/lib
-    PYTHIALIBDIR=`pwd`
-    mypop
-    echo "Pythia6 lib dir is $PYTHIALIBDIR..."
-    echo "export PYTHIA6=$PYTHIALIBDIR" >> $ENVFILE
-    echo "export LD_LIBRARY_PATH=${PYTHIALIBDIR}:\$LD_LIBRARY_PATH" >> $ENVFILE
+    if [ "$ADD_PYTHIA_ENV" == "yes" ]; then
+      mypush $PYTHIADIR/v6_424/lib
+      PYTHIALIBDIR=`pwd`
+      mypop
+      echo "Pythia6 lib dir is $PYTHIALIBDIR..."
+      echo "export PYTHIA6=$PYTHIALIBDIR" >> $ENVFILE
+      echo "export LD_LIBRARY_PATH=${PYTHIALIBDIR}:\$LD_LIBRARY_PATH" >> $ENVFILE
+    fi
   else 
     badpythia
   fi
@@ -285,13 +328,13 @@ dobuild()
       GSLINST=`pwd`
       mypush $GSLDIR
       echo "Running configure in $PWD..."
-      $NICE ./configure --prefix=$GSLINST >& log.config
+      exec_package_comm "./configure --prefix=$GSLINST" "log.config"
       echo "Running make in $PWD..."
-      $NICE $MAKE >& log.make
+      exec_package_comm "$MAKE" "log.make"
       echo "Running make check in $PWD..."
-      $NICE $MAKE check >& log.check
+      exec_package_comm "$MAKE check" "log.check"
       echo "Running make install in $PWD..."
-      $NICE $MAKE install >& log.install
+      exec_package_comm "$MAKE install" "log.install"
       mypop
       echo "Finished GSL..."
       mypop
@@ -301,14 +344,19 @@ dobuild()
   else
     echo "Using pre-built GSL..."
   fi
-  mypush gsl/lib
-  GSLLIB=`pwd`
-  mypop
-  mypush gsl/include
-  GSLINC=`pwd`
-  mypop
-  echo "GSL lib dir is $GSLLIB..."
-  echo "GSL inc dir is $GSLINC..."
+  if [ "$ADD_GSL_ENV" == "yes" ]; then
+    mypush gsl/lib
+    GSLLIB=`pwd`
+    mypop
+    mypush gsl/include
+    GSLINC=`pwd`
+    mypop
+    echo "GSL lib dir is $GSLLIB..."
+    echo "GSL inc dir is $GSLINC..."
+    echo "export GSLLIB=$GSLLIB" >> $ENVFILE
+    echo "export GSLINC=$GSLLINC" >> $ENVFILE
+    echo "export LD_LIBRARY_PATH=${GSLLIB}:\$LD_LIBRARY_PATH" >> $ENVFILE
+  fi
 
   mybr
   if [ "$BUILD_ROOT" == "yes" ]; then
@@ -318,9 +366,9 @@ dobuild()
       if [ -f $ARCHIVE/root.tgz ]; then
         echo "Retrieving code from archive..."
         echo " We will not be adjusting the tag!"
-        mv $ARCHIVE/root.tgz .
+        mv -v $ARCHIVE/root.tgz .
         tar -xvzf $1 >& /dev/null
-        mv root.tgz $ARCHIVE
+        mv -v root.tgz $ARCHIVE
         mypush root
       else
         echo "Downloading code from the internet..."
@@ -338,9 +386,10 @@ dobuild()
       else
         badpythia
       fi
-      $NICE ./configure linuxx8664gcc --build=debug $PYTHIASTRING --enable-gdml --enable-gsl-shared --enable-mathmore --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB >& log.config
+      exec_package_comm "$NICE ./configure linuxx8664gcc --build=debug $PYTHIASTRING --enable-gdml --enable-gsl-shared --enable-mathmore --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB" "log.config"
       echo "Running make in $PWD..."
-      nice $MAKE >& log.make
+      # nice $MAKE >& log.make
+      exec_package_comm "$MAKE" "log.make"
       echo "Finished ROOT..."
       mypop
     else
@@ -349,13 +398,15 @@ dobuild()
   else
     echo "Using pre-built ROOT..."
   fi
-  mypush root
-  ROOTSYS=`pwd`
-  echo "ROOTSYS is $ROOTSYS..."
-  mypop
-  echo "export ROOTSYS=$ROOTSYS" >> $ENVFILE
-  echo "export PATH=${ROOTSYS}/bin:\$PATH" >> $ENVFILE
-  echo "export LD_LIBRARY_PATH=${ROOTSYS}/lib:\$LD_LIBRARY_PATH" >> $ENVFILE
+  if [ "$ADD_ROOT_ENV" == "yes" ]; then
+    mypush root
+    ROOTSYS=`pwd`
+    echo "ROOTSYS is $ROOTSYS..."
+    mypop
+    echo "export ROOTSYS=$ROOTSYS" >> $ENVFILE
+    echo "export PATH=${ROOTSYS}/bin:\$PATH" >> $ENVFILE
+    echo "export LD_LIBRARY_PATH=${ROOTSYS}/lib:\$LD_LIBRARY_PATH" >> $ENVFILE
+  fi
 
   LOG4CPPDIR="log4cpp"
   mybr
@@ -365,24 +416,26 @@ dobuild()
       echo "Building log4cpp in $PWD..."
       if [ -f $ARCHIVE/$LOG4CPPSRC ]; then
         echo "Retrieving code from archive..."
-        mv $ARCHIVE/$LOG4CPPSRC .
+        mv -v $ARCHIVE/$LOG4CPPSRC .
         tar -xvzf $LOG4CPPSRC >& /dev/null 
-        mv $LOG4CPPSRC $ARCHIVE
+        mv -v $LOG4CPPSRC $ARCHIVE
         mypush $LOG4CPPDIR
       else
         echo "Using the log4cpp code present here..."
         tar -xvzf $LOG4CPPSRC >& /dev/null 
         echo "Archiving the log4cpp tarball. Look for it in $ARCHIVE..."
-        mv $LOG4CPPSRC $ARCHIVE
+        mv -v $LOG4CPPSRC $ARCHIVE
         mypush $LOG4CPPDIR
       fi
       echo "Running autogen in $PWD..."
-      $NICE ./autogen.sh >& log.autogen
+      exec_package_comm "$NICE ./autogen.sh" "log.autogen"
       echo "Running configure in $PWD..."
-      $NICE ./configure --prefix=`pwd` >& log.config
+      exec_package_comm "$NICE ./configure --prefix=`pwd`" "log.config"
       echo "Running make in $PWD..."
-      $NICE $MAKE >& log.make
+      exec_package_comm "$NICE $MAKE" "log.make"
       echo "Running make install in $PWD..."
+      echo "  ...for some reason, make install usually succeeds, but throws an"
+      echo "  error anyway, so we won't check for success here (yet)."
       $NICE $MAKE install >& log.install
       echo "Finished log4cpp..."
       mypop
@@ -392,50 +445,19 @@ dobuild()
   else
     echo "Using pre-built log4cpp..."
   fi
-  mypush $LOG4CPPDIR/include
-  LOG4CPP_INC=`pwd`
-  mypop
-  mypush $LOG4CPPDIR/lib
-  LOG4CPP_LIB=`pwd`
-  mypop
-  echo "log4cpp lib dir is $LOG4CPP_LIB..."
-  echo "log4cpp inc dir is $LOG4CPP_INC..."
-  echo "export LOG4CPP_INC=$LOG4CPP_INC" >> $ENVFILE
-  echo "export LOG4CPP_LIB=$LOG4CPP_LIB" >> $ENVFILE
-  echo "export LD_LIBRARY_PATH=${LOG4CPP_LIB}:\$LD_LIBRARY_PATH" >> $ENVFILE
-
-  if [ $LHAPDFMAJOR -gt 5 ]; then
-    BOOSTDIR=`basename ${BOOSTSRC} .tar.gz`
-    BOOSTROOT=boost
-    mybr
-    if [ "$BUILD_BOOST" == "yes" ]; then
-      mymkarch $BOOSTROOT
-      if [ ! -d $BOOSTROOT ]; then
-        echo "Making installation directories for boost..."
-        mkdir $BOOSTROOT
-        mypush $BOOSTROOT
-        echo "Building boost $BOOSTVER in $PWD..."
-        BOOSTINST=`pwd`
-        echo "Boost install directory is $BOOSTINST..."
-        getcode $BOOSTSRC http://sourceforge.net/projects/boost/files/boost/${BOOSTVER} download
-        mypush $BOOSTDIR
-        echo "Header-only libraries! Not building anything..."
-        echo "  But if we were to build anything for boost, we would do it here..."
-        mypop
-        mypop
-        echo "Finished building boost..."
-      else
-        allreadybuilt "boost"
-      fi
-    else
-      echo "Using pre-built boost..."
-    fi
-    mypush $BOOSTROOT/$BOOSTDIR
-    BOOST_ROOT=`pwd`
+  if [ "$ADD_LOG4CPP_ENV" == "yes" ]; then
+    mypush $LOG4CPPDIR/include
+    LOG4CPP_INC=`pwd`
     mypop
-    echo "Boost root is $BOOST_ROOT..."
-    echo "export BOOST_ROOT=$BOOST_ROOT" >> $ENVFILE
-  fi  # if LHAPDF is C++ (6+)
+    mypush $LOG4CPPDIR/lib
+    LOG4CPP_LIB=`pwd`
+    mypop
+    echo "log4cpp lib dir is $LOG4CPP_LIB..."
+    echo "log4cpp inc dir is $LOG4CPP_INC..."
+    echo "export LOG4CPP_INC=$LOG4CPP_INC" >> $ENVFILE
+    echo "export LOG4CPP_LIB=$LOG4CPP_LIB" >> $ENVFILE
+    echo "export LD_LIBRARY_PATH=${LOG4CPP_LIB}:\$LD_LIBRARY_PATH" >> $ENVFILE
+  fi
 
   LHAPDFDIR=`basename ${LHAPDFSRC} .tar.gz`
   LHAPDFROOT=lhapdf
@@ -452,15 +474,11 @@ dobuild()
       getcode $LHAPDFSRC "http://www.hepforge.org/archive/lhapdf"
       mypush $LHAPDFDIR
       echo "Running configure in $PWD..."
-      WITHBOOST=""
-      if [ $LHAPDFMAJOR -gt 5 ]; then
-        WITHBOOST="--with-boost=$BOOST_ROOT"
-      fi
-      $NICE ./configure --prefix=$LHAINST $WITHBOOST >& log.config
+      exec_package_comm "$NICE ./configure --prefix=$LHAINST" "log.config"
       echo "Running make in $PWD..."
-      $NICE $MAKE >& log.make
+      exec_package_comm "$NICE $MAKE" "log.make"
       echo "Running make install in $PWD..."
-      $NICE $MAKE install >& log.install
+      exec_package_comm "$NICE $MAKE install" "log.install"
       mypop
       mypop
       echo "Finished building LHAPDF..."
@@ -470,21 +488,23 @@ dobuild()
   else
     echo "Using pre-built LHAPDF..."
   fi
-  mypush $LHAPDFROOT
-  LHAPATH=`pwd`
-  mypop
-  mypush $LHAPDFROOT/lib
-  LHAPDF_LIB=`pwd`
-  mypop
-  mypush $LHAPDFROOT/include
-  LHAPDF_INC=`pwd`
-  mypop
-  echo "LHAPDF lib is $LHAPDF_LIB..."
-  echo "LHAPDF inc is $LHAPDF_INC..."
-  echo "export LHAPATH=$LHAPATH" >> $ENVFILE
-  echo "export LHAPDF_INC=$LHAPDF_INC" >> $ENVFILE
-  echo "export LHAPDF_LIB=$LHAPDF_LIB" >> $ENVFILE
-  echo "export LD_LIBRARY_PATH=${LHAPDF_LIB}:\$LD_LIBRARY_PATH" >> $ENVFILE
+  if [ "$ADD_LHAPDF_ENV" == "yes" ]; then
+    mypush $LHAPDFROOT
+    LHAPATH=`pwd`
+    mypop
+    mypush $LHAPDFROOT/lib
+    LHAPDF_LIB=`pwd`
+    mypop
+    mypush $LHAPDFROOT/include
+    LHAPDF_INC=`pwd`
+    mypop
+    echo "LHAPDF lib is $LHAPDF_LIB..."
+    echo "LHAPDF inc is $LHAPDF_INC..."
+    echo "export LHAPATH=$LHAPATH" >> $ENVFILE
+    echo "export LHAPDF_INC=$LHAPDF_INC" >> $ENVFILE
+    echo "export LHAPDF_LIB=$LHAPDF_LIB" >> $ENVFILE
+    echo "export LD_LIBRARY_PATH=${LHAPDF_LIB}:\$LD_LIBRARY_PATH" >> $ENVFILE
+  fi
   if [ "$GET_PDFS" == "yes" ]; then
     echo "Getting PDFs..."
     mypush $LHAPDFROOT/bin
@@ -493,6 +513,7 @@ dobuild()
       if [ ! -f $LHAPATH/$pdf ]; then
         echo "...Getting $pdf..."
         $NICE ./lhapdf-getdata $pdf --dest=$LHAPATH
+        check_status $?
       else
         echo "$pdf is already present..."
       fi
@@ -501,6 +522,9 @@ dobuild()
     if [ $LHAPDFMAJOR -eq 5 ]; then
       echo "Installing the patched GRV98lo file from the archive."
       cp -b archive/GRV98lo_pdflib.LHgrid $LHAPATH/GRV98lo_patched.LHgrid
+    else
+      echo "ERROR! Unsupported LHAPDF!"
+      exit 1
     fi
     echo "Finished getting PDFs..."
   else
@@ -522,14 +546,18 @@ dobuild()
       ROOMU_SYS=`pwd`
       echo " ROOMU_SYS is $ROOMU_SYS..."
       export ROOMU_SYS=$ROOMU_SYS
-# to build RooMUHistos, ROOT env.var. need to be explicitly set 
+      # to build RooMUHistos, ROOT env.var. need to be explicitly set 
       export ROOTSYS=$ROOTSYS
       export LD_LIBRARY_PATH=${ROOTSYS}/lib:$LD_LIBRARY_PATH
       mypush PlotUtils
-      $NICE $MAKE >& log.make
+      echo "Building PlotUtils in $PWD..."
+      # $NICE $MAKE >& log.make
+      exec_package_comm "$NICE $MAKE" "log.make"
       mypop
       mypush macros
-      $NICE $MAKE >& log.make
+      echo "Building macros in $PWD..."
+      # $NICE $MAKE >& log.make
+      exec_package_comm "$NICE $MAKE" "log.make"
       mypop
       mypop
     else
@@ -548,16 +576,47 @@ dobuild()
   mybr
 }
 
-while getopts "p:r:fmns" options; do
-  case $options in
-    p) PYTHIAVER=$OPTARG;;
-    r) ROOTTAG=$OPTARG;;
-    f) FORCEBUILD=1;;
-    n) MAKENICE=1;;
-    m) MAKE=make;;
-    s) HTTPSCHECKOUT=1;;
+#
+# Parse the command line flags.
+#
+while [[ $# > 0 ]]
+do
+  key="$1"
+  shift
+
+  case $key in
+    -h|--help)
+    HELPFLAG=1
+    ;;
+    -p|--pythia)
+    PYTHIAVER="$1"
+    shift
+    ;;
+    -m|--make)
+    MAKE=make
+    ;;
+    -n|--nice)
+    MAKENICE=1
+    ;;
+    -r|--root)
+    ROOTTAG="$1"
+    shift
+    ;;
+    -s|--https)
+    HTTPSCHECKOUT=1
+    ;;
+    -v|--verbose)
+    VERBOSE=1
+    ;;
+    -f|--force)
+    FORCEBUILD=1
+    ;;
+    *)    # Unknown option
+
+    ;;
   esac
 done
+
 
 if [ $PYTHIAVER -eq -1 ]; then
   HELPFLAG=1
@@ -566,6 +625,21 @@ if [ $HELPFLAG -ne 0 ]; then
   help
   exit 0
 fi
+mybr
+echo " "
+echo "Welcome to the GENIE 3rd party support code build script."
+echo " "
+echo " OS Information: "
+if [[ `which lsb_release` != "" ]]; then
+  lsb_release -a
+elif [[ -e "/etc/lsb-release" ]]; then
+  cat /etc/lsb-release
+elif [[ -e "/etc/issue.net" ]]; then
+  cat /etc/issue.net
+else
+  echo " Missing information on Linux distribution..."
+fi
+uname -a
 mybr
 echo "Selected Pythia Version is $PYTHIAVER..."
 if [ $PYTHIAVER -ne 6 -a $PYTHIAVER -ne 8 ]; then
@@ -580,4 +654,5 @@ else
   GITCHECKOUT="git@github.com:"
 fi
 
+# Build the code
 dobuild
