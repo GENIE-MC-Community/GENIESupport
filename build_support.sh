@@ -71,6 +71,8 @@ ADD_LHAPDF_ENV=$BUILD_LHAPDF
 #-----------------------------------------------------
 # Begin work...
 
+BUILDSTARTTIME=`date +%Y-%m-%d-%H-%M-%S`
+echo "  Starting the build at $BUILDSTARTTIME"
 
 # quiet pushd
 mypush() 
@@ -246,9 +248,9 @@ dobuild()
         getcode $PYTHIASRC "http://home.thep.lu.se/~torbjorn/pythia8"
         mypush $PYTHIADIR
         echo "Running configure in $PWD..."
-        exec_package_comm "./configure --enable-debug --enable-shared" "log.config"
+        exec_package_comm "./configure --enable-debug --enable-shared" "log_${BUILDSTARTTIME}.config"
         echo "Running make in $PWD..."
-        exec_package_comm "$MAKE" "log.make"
+        exec_package_comm "$MAKE" "log_${BUILDSTARTTIME}.make"
         mypop
         echo "Finished Pythia..."
       else
@@ -292,7 +294,7 @@ dobuild()
           exit 1
         fi 
         echo "Running the script in $PWD..."
-        exec_package_comm "./build_pythia6.sh" "log.pythia6"        
+        exec_package_comm "./build_pythia6.sh" "log_${BUILDSTARTTIME}.pythia6"        
         rm build_pythia6.sh 
         mypop
         echo "Finished Pythia..."
@@ -328,13 +330,13 @@ dobuild()
       GSLINST=`pwd`
       mypush $GSLDIR
       echo "Running configure in $PWD..."
-      exec_package_comm "./configure --prefix=$GSLINST" "log.config"
+      exec_package_comm "./configure --prefix=$GSLINST" "log_${BUILDSTARTTIME}.config"
       echo "Running make in $PWD..."
-      exec_package_comm "$MAKE" "log.make"
+      exec_package_comm "$MAKE" "log_${BUILDSTARTTIME}.make"
       echo "Running make check in $PWD..."
-      exec_package_comm "$MAKE check" "log.check"
+      exec_package_comm "$MAKE check" "log_${BUILDSTARTTIME}.check"
       echo "Running make install in $PWD..."
-      exec_package_comm "$MAKE install" "log.install"
+      exec_package_comm "$MAKE install" "log_${BUILDSTARTTIME}.install"
       mypop
       echo "Finished GSL..."
       mypop
@@ -386,10 +388,10 @@ dobuild()
       else
         badpythia
       fi
-      exec_package_comm "$NICE ./configure linuxx8664gcc --build=debug $PYTHIASTRING --enable-gdml --enable-gsl-shared --enable-mathmore --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB" "log.config"
+      exec_package_comm "$NICE ./configure linuxx8664gcc --build=debug $PYTHIASTRING --enable-gdml --enable-gsl-shared --enable-mathmore --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB" "log_${BUILDSTARTTIME}.config"
       echo "Running make in $PWD..."
-      # nice $MAKE >& log.make
-      exec_package_comm "$MAKE" "log.make"
+      # nice $MAKE >& log_${BUILDSTARTTIME}.make
+      exec_package_comm "$MAKE" "log_${BUILDSTARTTIME}.make"
       echo "Finished ROOT..."
       mypop
     else
@@ -428,15 +430,15 @@ dobuild()
         mypush $LOG4CPPDIR
       fi
       echo "Running autogen in $PWD..."
-      exec_package_comm "$NICE ./autogen.sh" "log.autogen"
+      exec_package_comm "$NICE ./autogen.sh" "log_${BUILDSTARTTIME}.autogen"
       echo "Running configure in $PWD..."
-      exec_package_comm "$NICE ./configure --prefix=`pwd`" "log.config"
+      exec_package_comm "$NICE ./configure --prefix=`pwd`" "log_${BUILDSTARTTIME}.config"
       echo "Running make in $PWD..."
-      exec_package_comm "$NICE $MAKE" "log.make"
+      exec_package_comm "$NICE $MAKE" "log_${BUILDSTARTTIME}.make"
       echo "Running make install in $PWD..."
       echo "  ...for some reason, make install usually succeeds, but throws an"
       echo "  error anyway, so we won't check for success here (yet)."
-      $NICE $MAKE install >& log.install
+      $NICE $MAKE install >& log_${BUILDSTARTTIME}.install
       echo "Finished log4cpp..."
       mypop
     else
@@ -474,11 +476,11 @@ dobuild()
       getcode $LHAPDFSRC "http://www.hepforge.org/archive/lhapdf"
       mypush $LHAPDFDIR
       echo "Running configure in $PWD..."
-      exec_package_comm "$NICE ./configure --prefix=$LHAINST" "log.config"
+      exec_package_comm "$NICE ./configure --prefix=$LHAINST" "log_${BUILDSTARTTIME}.config"
       echo "Running make in $PWD..."
-      exec_package_comm "$NICE $MAKE" "log.make"
+      exec_package_comm "$NICE $MAKE" "log_${BUILDSTARTTIME}.make"
       echo "Running make install in $PWD..."
-      exec_package_comm "$NICE $MAKE install" "log.install"
+      exec_package_comm "$NICE $MAKE install" "log_${BUILDSTARTTIME}.install"
       mypop
       mypop
       echo "Finished building LHAPDF..."
@@ -551,13 +553,13 @@ dobuild()
       export LD_LIBRARY_PATH=${ROOTSYS}/lib:$LD_LIBRARY_PATH
       mypush PlotUtils
       echo "Building PlotUtils in $PWD..."
-      # $NICE $MAKE >& log.make
-      exec_package_comm "$NICE $MAKE" "log.make"
+      # $NICE $MAKE >& log_${BUILDSTARTTIME}.make
+      exec_package_comm "$NICE $MAKE" "log_${BUILDSTARTTIME}.make"
       mypop
       mypush macros
       echo "Building macros in $PWD..."
-      # $NICE $MAKE >& log.make
-      exec_package_comm "$NICE $MAKE" "log.make"
+      # $NICE $MAKE >& log_${BUILDSTARTTIME}.make
+      exec_package_comm "$NICE $MAKE" "log_${BUILDSTARTTIME}.make"
       mypop
       mypop
     else

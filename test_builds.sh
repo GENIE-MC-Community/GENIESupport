@@ -10,7 +10,7 @@ warn_the_user()
 cat <<EOF
                                 WARNING! 
 
-Don't run these tests unless you know what you are doing! All they will do
+Do not run these tests unless you know what you are doing! All they will do
 is build a lot of code and then tear it back down.
 
 EOF
