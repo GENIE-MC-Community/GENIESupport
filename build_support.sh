@@ -593,9 +593,6 @@ do
             PYTHIAVER="$1"
             shift
             ;;
-        -m|--make)
-            MAKE=make
-            ;;
         -n|--nice)
             MAKENICE=1
             ;;
