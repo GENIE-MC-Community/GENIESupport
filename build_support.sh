@@ -10,7 +10,7 @@ Usage: ./build_support -<flag>
                    -p / --pythia # : Pythia 6 or 8 and link ROOT to it (required).
                    -r / --root tag : Which ROOT version (default = v5-34-24).
                    -n / --nice     : Run configure, build, etc. under nice.
-                   -f / --force    : Archive current build and start fresh.
+                   -c / --force    : Archive current build and start fresh.
                    -s / --https    : Use https for GitHub checkout (default is ssh)
                    -v / --verbose  : Print logging data to stdout during installation
  
@@ -606,7 +606,7 @@ do
         -v|--verbose)
             VERBOSE=1
             ;;
-        -f|--force)
+        -c|--force)
             FORCEBUILD=1
             ;;
         *)    # Unknown option
