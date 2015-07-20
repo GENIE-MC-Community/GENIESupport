@@ -139,7 +139,7 @@ badpythia()
 # echo if the arg was already built
 allreadybuilt()
 {
-    echo "$1 top directory present. Remove or run with force (-f) to rebuild."
+    echo "$1 top directory present. Remove or run with force (-c) to rebuild."
 }
 
 # build/configure a package
