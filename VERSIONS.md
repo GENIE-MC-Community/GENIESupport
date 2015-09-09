@@ -6,14 +6,16 @@ When first checking out this package, you will have the `HEAD` version of the
 `master` branch. Get a specific tagged release by checking out the tag into a
 branch like so:
 
-    git checkout -b R-2_9_0.0-br R-2_9_0.0
+    git checkout -b R-2_9_0.1-br R-2_9_0.1
 
-This will checkout _tag_ `R-2_9_0.0` into _branch_ `R-2_9_0.0-br`. You want to
+This will checkout _tag_ `R-2_9_0.1` into _branch_ `R-2_9_0.1-br`. You want to
 checkout into a branch so you are not in a "detached `HEAD`" state.
 
 
 ## Current tags
 
+* `R-2_9_0.1`: Bugfix patch to `R-2_9_0.0` that correctly sets the `$GSLINC`
+environment variable.
 * `R-2_9_0.0`: Minor changes to `R-2_8_6.3`. Intended for use with GENIE 2.9.0.
 * `R-2_8_6.3-no-LHAPDF6`: Minor changes to `R-2_8_6.3`; No longer supporting
 building LHAPDF6 and Boost.
