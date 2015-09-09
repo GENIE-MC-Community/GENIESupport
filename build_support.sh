@@ -355,7 +355,7 @@ dobuild()
         echo "GSL lib dir is $GSLLIB..."
         echo "GSL inc dir is $GSLINC..."
         echo "export GSLLIB=$GSLLIB" >> $ENVFILE
-        echo "export GSLINC=$GSLLINC" >> $ENVFILE
+        echo "export GSLINC=$GSLINC" >> $ENVFILE
         echo "export LD_LIBRARY_PATH=${GSLLIB}:\$LD_LIBRARY_PATH" >> $ENVFILE
     fi
 
