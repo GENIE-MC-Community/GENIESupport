@@ -80,3 +80,4 @@ into "permission denied" errors, try using the `https` checkout flag,
 * Gabriel Perdue,  [Fermilab](http://www.fnal.gov)
 * Julia Yarba,     [Fermilab](http://www.fnal.gov)
 * Ryan Hill,       [Queen Mary University of London](http://www.qmul.ac.uk)
+* Martti Nirkko,   [University of Bern](http://www.unibe.ch/eng/)
