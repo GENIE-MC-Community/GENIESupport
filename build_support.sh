@@ -542,11 +542,12 @@ dobuild()
         if [ ! -d $ROOMUPKG ]; then
             echo "Building RooMUHistos in $ROOMUPKG..." 
             git clone ${GITCHECKOUT}ManyUniverseAna/${ROOMUPKG}.git
-            export PATH=$ROOMU_SYS/bin:$PATH
+            ls -al
             mypush $ROOMUPKG
             ROOMU_SYS=`pwd`
             echo " ROOMU_SYS is $ROOMU_SYS..."
             export ROOMU_SYS=$ROOMU_SYS
+            export PATH=$ROOMU_SYS/bin:$PATH
             # to build RooMUHistos, ROOT env.var. need to be explicitly set 
             export ROOTSYS=$ROOTSYS
             export LD_LIBRARY_PATH=${ROOTSYS}/lib:$LD_LIBRARY_PATH
