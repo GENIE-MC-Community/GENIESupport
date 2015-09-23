@@ -56,7 +56,7 @@ test()
         | tee -a $TESTBUILDSLOG
     ./build_support.sh -p $PYTHIAV -r $ROOTV $HTTPFLAG \
         | tee -a $TESTBUILDSLOG
-    if [[ $? != 1 ]]; then
+    if [[ $? != 0 ]]; then
         echo " "
         echo " "
         echo " "
