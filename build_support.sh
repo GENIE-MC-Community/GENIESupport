@@ -542,7 +542,6 @@ dobuild()
         if [ ! -d $ROOMUPKG ]; then
             echo "Building RooMUHistos in $ROOMUPKG..." 
             git clone ${GITCHECKOUT}ManyUniverseAna/${ROOMUPKG}.git
-            ls -al
             mypush $ROOMUPKG
             ROOMU_SYS=`pwd`
             echo " ROOMU_SYS is $ROOMU_SYS..."
