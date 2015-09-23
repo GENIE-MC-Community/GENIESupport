@@ -73,13 +73,7 @@ test()
 warn_the_user
 init_logs
 
-test 6 v5-34-24 
-teardown
-
 test 6 v5-34-24 -s
-teardown
-
-test 8 v5-34-24
 teardown
 
 test 8 v5-34-24 -s
