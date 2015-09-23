@@ -575,6 +575,7 @@ dobuild()
     mybr
     echo "Done!"
     mybr
+    exit 0
 }
 
 #
