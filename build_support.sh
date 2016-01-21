@@ -13,6 +13,7 @@ Usage: ./build_support -<flag>
                    -c / --force    : Archive current build and start fresh.
                    -s / --https    : Use https for GitHub checkout (default is ssh)
                    -v / --verbose  : Print logging data to stdout during installation
+                   --no-roomu      : build without RooMUHistos
  
   Examples:  
     ./build_support                   # do nothing; print the help menu
@@ -609,6 +610,9 @@ do
             ;;
         -c|--force)
             FORCEBUILD=1
+            ;;
+        --no-roomu)
+            BUILD_ROOMU="no"
             ;;
         *)    # Unknown option
 

@@ -30,6 +30,7 @@ Running the script with no arguments will produce the help menu:
                        -c / --force    : Archive current build and start fresh.
                        -s / --https    : Use https for GitHub checkout (default is ssh)
                        -v / --verbose  : Print logging data to stdout during installation
+                       --no-roomu      : build without RooMUHistos
      
       Examples:  
         ./build_support.sh                   # do nothing; print the help menu
