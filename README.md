@@ -71,6 +71,16 @@ install them with a package manager:
 * Download source from [GNU](http://ftp.gnu.org/gnu/autoconf/) and build.
 * etc.
 
+For Ubuntu, you also probably need `libtool`:
+
+* `sudo apt-get install libtool`
+
+If you are using `gcc` 5, you may have trouble building ROOT5. Some
+versions will not compile unless you edit the configuration files by
+hand. (The ROOT team is not supporting ROOT5 for `gcc` 5 and they
+request users to move to ROOT6, but we have not completed that transition
+yet.) We have had luck with ROOT `v5-34-30` using `gcc` 5.2. 
+
 Finally, the default checkout method for packages living in GitHub is
 ssh (because it was easier for me to configure at Fermilab). If you run
 into "permission denied" errors, try using the `https` checkout flag,
