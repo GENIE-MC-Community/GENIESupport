@@ -476,7 +476,7 @@ dobuild()
             getcode $LHAPDFSRC "http://www.hepforge.org/archive/lhapdf"
             mypush $LHAPDFDIR
             echo "Running configure in $PWD..."
-            exec_package_comm "$NICE ./configure --prefix=$LHAINST --disable-old-ccwrap --disable-pyex" "log_${BUILDSTARTTIME}.config"
+            exec_package_comm "$NICE ./configure --prefix=$LHAINST --disable-old-ccwrap --disable-pyext" "log_${BUILDSTARTTIME}.config"
             echo "Running make in $PWD..."
             exec_package_comm "$NICE $MAKE" "log_${BUILDSTARTTIME}.make"
             echo "Running make install in $PWD..."
