@@ -60,6 +60,8 @@
 #                 otherwise first of gfortran or g77 found
 #    2010-12-29:  addition of -m32 option; default v6_422
 #    2011-01-13:  default v6_424; clean up comments
+#    2016-04-05:  change location of Pythia6 code archives to GitHub for 
+#                 better stability (CERN no longer answering the phone...)
 #
 ############################################################################
 #
@@ -337,7 +339,8 @@ elif [ $mt -eq 410 ] ; then
 else
 # new location, .f file is gzipped
   basef=pythia-${major}.${minor}.${tiny}.f
-  location=http://www.hepforge.org/archive/pythia6
+  #location=http://www.hepforge.org/archive/pythia6
+  location=https://raw.github.com/GENIEMC/Pythia6Support/master/
   gzipped=".gz"
 fi
 # if we don't already have it, fetch the .f file
@@ -360,8 +363,10 @@ fi
 # fetch the ROOT interface code
 #
 if [ ! -f pythia6.tar.gz -o ${refetch} -ne 0 ] ; then
-  echo "${fetchit} ftp://root.cern.ch/root/pythia6.tar.gz"
-  ${fetchit} ftp://root.cern.ch/root/pythia6.tar.gz
+  # echo "${fetchit} ftp://root.cern.ch/root/pythia6.tar.gz"
+  # ${fetchit} ftp://root.cern.ch/root/pythia6.tar.gz
+  echo "${fetchit} https://raw.github.com/GENIEMC/Pythia6Support/master/pythia6.tar.gz"
+  ${fetchit} https://raw.github.com/GENIEMC/Pythia6Support/master/pythia6.tar.gz
 fi
 
 ############################################################################
