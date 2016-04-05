@@ -340,13 +340,13 @@ else
 # new location, .f file is gzipped
   basef=pythia-${major}.${minor}.${tiny}.f
   #location=http://www.hepforge.org/archive/pythia6
-  location=https://raw.github.com/GENIEMC/Pythia6Support/master/
+  location=https://raw.githubusercontent.com/GENIEMC/Pythia6Support/master/
   gzipped=".gz"
 fi
 # if we don't already have it, fetch the .f file
 if [ ! -f ${basef}_with_dummies -o ${refetch} -ne 0 ] ; then
-  echo "${fetchit} ${location}/${basef}${gzipped}"
-  $fetchit ${location}/${basef}${gzipped}
+  echo "${fetchit} --no-check-certificate ${location}/${basef}${gzipped}"
+  $fetchit --no-check-certificate ${location}/${basef}${gzipped}
   if [ ! ${basef}${gzipped} ] ; then
     echo "Sorry could not fetch ${basef}${gzipped} from ${location}"
     exit 1
@@ -365,8 +365,8 @@ fi
 if [ ! -f pythia6.tar.gz -o ${refetch} -ne 0 ] ; then
   # echo "${fetchit} ftp://root.cern.ch/root/pythia6.tar.gz"
   # ${fetchit} ftp://root.cern.ch/root/pythia6.tar.gz
-  echo "${fetchit} https://raw.github.com/GENIEMC/Pythia6Support/master/pythia6.tar.gz"
-  ${fetchit} https://raw.github.com/GENIEMC/Pythia6Support/master/pythia6.tar.gz
+  echo "${fetchit} --no-check-certificate https://raw.githubusercontent.com/GENIEMC/Pythia6Support/master/pythia6.tar.gz"
+  ${fetchit} --no-check-certificate https://raw.githubusercontent.com/GENIEMC/Pythia6Support/master/pythia6.tar.gz
 fi
 
 ############################################################################
