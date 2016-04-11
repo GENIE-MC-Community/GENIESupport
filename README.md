@@ -16,9 +16,10 @@ or open an issue on [GitHub](https://github.com/GENIEMC/GENIESupport).
 ## Basic Usage
 
 This script will install the required third party packages to build GENIE 
-from source. It has been thoroughly tested on Scientific Linux 5 only. Some
-users have had success on Ubuntu, but read the trouble-shooting section
-carefully.
+from source. It has been thoroughly tested on Scientific Linux 5 and 6. 
+It should also work on Ubuntu and CentOS, but read the trouble-shooting
+section carefully. If you run into trouble (especially on Ubuntu 15), 
+see [Wayfarer](https://github.com/GENIEMC/Wayfarer).
 
 Running the script with no arguments will produce the help menu:
 
