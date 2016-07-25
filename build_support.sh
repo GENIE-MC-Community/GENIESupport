@@ -388,7 +388,7 @@ dobuild()
             else
                 badpythia
             fi
-            exec_package_comm "$NICE ./configure linuxx8664gcc --build=debug $PYTHIASTRING --enable-gdml --enable-gsl-shared --enable-mathmore --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB" "log_${BUILDSTARTTIME}.config"
+            exec_package_comm "$NICE ./configure linuxx8664gcc --build=debug $PYTHIASTRING --enable-gdml --enable-gsl-shared --enable-mathmore --enable-minuit2 --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB" "log_${BUILDSTARTTIME}.config"
             echo "Running make in $PWD..."
             # nice $MAKE >& log_${BUILDSTARTTIME}.make
             exec_package_comm "$MAKE" "log_${BUILDSTARTTIME}.make"
