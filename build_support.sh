@@ -346,7 +346,7 @@ dobuild()
     else
         echo "Using pre-built GSL..."
     fi
-    if [ "$ADD_GSL_ENV" == "yes" ]; then
+    if [ "$ADD_GSL_ENV" == "yes" && "$BUILD_GSL" == "yes" ]; then
         mypush gsl/lib
         GSLLIB=`pwd`
         mypop
@@ -388,7 +388,11 @@ dobuild()
             else
                 badpythia
             fi
-            exec_package_comm "$NICE ./configure linuxx8664gcc --build=debug $PYTHIASTRING --enable-gdml --enable-gsl-shared --enable-mathmore --enable-minuit2 --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB" "log_${BUILDSTARTTIME}.config"
+            GSLSTRING=""
+            if [ "$BUILD_GSL" == "yes" ]; then
+                GSLSTRING="--enable-gsl-shared --enable-mathmore"
+            fi
+            exec_package_comm "$NICE ./configure linuxx8664gcc --build=debug $PYTHIASTRING --enable-gdml $GSLSTRING --enable-minuit2 --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB" "log_${BUILDSTARTTIME}.config"
             echo "Running make in $PWD..."
             # nice $MAKE >& log_${BUILDSTARTTIME}.make
             exec_package_comm "$MAKE" "log_${BUILDSTARTTIME}.make"
