@@ -14,6 +14,7 @@ Usage: ./build_support -<flag>
                    -s / --https    : Use https for GitHub checkout (default is ssh)
                    -v / --verbose  : Print logging data to stdout during installation
                    --no-roomu      : build without RooMUHistos
+                   --no-gsl        : build without GSL
  
   Examples:  
     ./build_support                   # do nothing; print the help menu
@@ -617,6 +618,9 @@ do
             ;;
         --no-roomu)
             BUILD_ROOMU="no"
+            ;;
+        --no-gsl)
+            BUILD_GSL="no"
             ;;
         *)    # Unknown option
 

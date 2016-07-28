@@ -32,6 +32,7 @@ Running the script with no arguments will produce the help menu:
                        -s / --https    : Use https for GitHub checkout (default is ssh)
                        -v / --verbose  : Print logging data to stdout during installation
                        --no-roomu      : build without RooMUHistos
+                       --no-gsl        : build without GSL
      
       Examples:  
         ./build_support.sh                   # do nothing; print the help menu
