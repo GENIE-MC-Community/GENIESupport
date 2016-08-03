@@ -14,7 +14,9 @@ to checkout into a branch so you are not in a "detached `HEAD`" state.
 
 ## Current tags
 
-* `R-2_10_10.0`: Enable minuit2 when building ROOT.
+* `R-2_10_10.0`: Enable minuit2 when building ROOT. Also turn off debug
+builds by default - users should now add a `-d/--debug` flag to build
+with debugging symbols (impacts Pythia8 (not used yet) and ROOT).
 * `R-2_10_6.0`: Use GitHub now to store Pythia6 files.
 * `R-2_10_2.0`: Optional disabling of RooMUHistos and fix for LHAPDF 5.9 on
 gcc 5.

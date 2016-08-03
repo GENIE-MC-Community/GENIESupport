@@ -13,6 +13,7 @@ Usage: ./build_support -<flag>
                    -c / --force    : Archive current build and start fresh.
                    -s / --https    : Use https for GitHub checkout (default is ssh)
                    -v / --verbose  : Print logging data to stdout during installation
+                   -d / --debug    : Build with debugging symbols (in Pythia8 and ROOT)
                    --no-roomu      : build without RooMUHistos
  
   Examples:  
@@ -52,6 +53,7 @@ FORCEBUILD=0         # non-zero will archive existing packages and rebuild
 PYTHIAVER=-1         # must eventually be either 6 or 8
 HTTPSCHECKOUT=0      # use https checkout if non-zero (otherwise ssh)
 VERBOSE=0            # send logging data to stdout also
+DEBUG="no"
 
 # should we build these packages? 
 BUILD_PYTHIA="yes"
@@ -248,7 +250,11 @@ dobuild()
                 getcode $PYTHIASRC "http://home.thep.lu.se/~torbjorn/pythia8"
                 mypush $PYTHIADIR
                 echo "Running configure in $PWD..."
-                exec_package_comm "./configure --enable-debug --enable-shared" "log_${BUILDSTARTTIME}.config"
+                DEBUGFLAG=""
+                if [ "$DEBUG" == "yes" ]; then
+                    DEBUGFLAG="--enable-debug"
+                fi
+                exec_package_comm "./configure $DEBUGFLAG --enable-shared" "log_${BUILDSTARTTIME}.config"
                 echo "Running make in $PWD..."
                 exec_package_comm "$MAKE" "log_${BUILDSTARTTIME}.make"
                 mypop
@@ -388,7 +394,11 @@ dobuild()
             else
                 badpythia
             fi
-            exec_package_comm "$NICE ./configure linuxx8664gcc --build=debug $PYTHIASTRING --enable-gdml --enable-gsl-shared --enable-mathmore --enable-minuit2 --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB" "log_${BUILDSTARTTIME}.config"
+            DEBUGFLAG=""
+            if [ "$DEBUG" == "yes" ]; then
+                DEBUGFLAG="--build=debug"
+            fi
+            exec_package_comm "$NICE ./configure linuxx8664gcc $DEBUGFLAG $PYTHIASTRING --enable-gdml --enable-gsl-shared --enable-mathmore --enable-minuit2 --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB" "log_${BUILDSTARTTIME}.config"
             echo "Running make in $PWD..."
             # nice $MAKE >& log_${BUILDSTARTTIME}.make
             exec_package_comm "$MAKE" "log_${BUILDSTARTTIME}.make"
@@ -610,6 +620,9 @@ do
             ;;
         -c|--force)
             FORCEBUILD=1
+            ;;
+        -d|--debug)
+            DEBUG="yes"
             ;;
         --no-roomu)
             BUILD_ROOMU="no"

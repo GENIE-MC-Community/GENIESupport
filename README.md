@@ -31,6 +31,7 @@ Running the script with no arguments will produce the help menu:
                        -c / --force    : Archive current build and start fresh.
                        -s / --https    : Use https for GitHub checkout (default is ssh)
                        -v / --verbose  : Print logging data to stdout during installation
+                       -d / --debug    : Build with debugging symbols (in Pythia8 and ROOT)
                        --no-roomu      : build without RooMUHistos
      
       Examples:  
