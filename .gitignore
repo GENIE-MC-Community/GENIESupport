@@ -3,6 +3,8 @@ lhapdf
 hepmc
 log4cpp
 root
+build_root
+cmake*
 pythia*
 environment_setup.sh
 boost
@@ -18,6 +20,7 @@ archive/*gsl-*.tar.gz
 archive/*lhapdf-*tar.gz
 archive/*LHAPDF-*tar.gz
 archive/*boost*tar.gz
+archive/cmake*
 
 archive/1*
 

@@ -38,31 +38,37 @@ PDFLIST="GRV98lo.LHgrid GRV98nlo.LHgrid"
 # we can't curl it (I think - maybe someone can).
 PYTHIASRC=pythia8183.tgz          # only if we use Pythia8.
 GSLSRC=gsl-1.16.tar.gz
-ROOTTAG="v5-34-24"
+ROOTTAG="v5-34-36"
 LOG4CPPSRC=log4cpp-1.1.1.tar.gz       
 LHAPDFSRC=lhapdf-5.9.1.tar.gz
 LHAPDFMAJOR=`echo $LHAPDFSRC | cut -c8-8` # expecting 'lhapdf-M.', etc.
+CMAKEDIR=cmake-3.6.1
+CMAKESRC=${CMAKEDIR}.tar.gz
+NEWCMAKE_MAJOR=`echo $CMAKEDIR | cut -c7-7`  # expecting cmake-j.n.p
+NEWCMAKE_MINOR=`echo $CMAKEDIR | cut -c9-9`  # expecting cmake-j.n.p
+CMAKE_URL="https://cmake.org/files/v${NEWCMAKE_MAJOR}.${NEWCMAKE_MINOR}/"
 
 ENVFILE="environment_setup.sh"
 
 # command line arg options
-MAKE=make            # This might need to `gmake`?
-MAKENICE=0           # make under nice?
-HELPFLAG=0           # show the help block (if non-zero)
-FORCEBUILD=0         # non-zero will archive existing packages and rebuild
-PYTHIAVER=-1         # must eventually be either 6 or 8
-HTTPSCHECKOUT=0      # use https checkout if non-zero (otherwise ssh)
-VERBOSE=0            # send logging data to stdout also
+MAKE=make                # This might need to `gmake`?
+MAKENICE=0               # make under nice?
+HELPFLAG=0               # show the help block (if non-zero)
+FORCEBUILD=0             # non-zero will archive existing packages and rebuild
+PYTHIAVER=-1             # must eventually be either 6 or 8
+HTTPSCHECKOUT=0          # use https checkout if non-zero (otherwise ssh)
+VERBOSE=0                # send logging data to stdout also
+USE_CMAKE_FOR_ROOT="yes" # use CMake to build ROOT
 DEBUG="no"
 
 # should we build these packages? 
 BUILD_PYTHIA="yes"
 BUILD_GSL="yes"
 BUILD_ROOT="yes"
-BUILD_LOG4CPP="yes"
-BUILD_LHAPDF="yes"
-GET_PDFS="yes"     # for lhapdf
-BUILD_ROOMU="yes"
+BUILD_LOG4CPP="no"
+BUILD_LHAPDF="no"
+GET_PDFS="no"     # for lhapdf
+BUILD_ROOMU="no"
 
 ADD_PYTHIA_ENV=$BUILD_PYTHIA
 ADD_GSL_ENV=$BUILD_GSL
@@ -205,6 +211,42 @@ dobuild()
         echo "Please edit it and replace wget with whatever executable you"
         echo "have that is appropriate. You could track down the binaries"
         echo "and put them in the archive directory instead as a work-around."
+    fi
+
+    if [ "$USE_CMAKE_FOR_ROOT" == "yes" ]; then
+        # based on requirements in ROOT's CMakeLists
+        # TODO: parse that file to get requirements
+        CMAKE_OK="no"  
+        CMAKE=`which cmake`
+        if [ "$CMAKE" != "" ]; then
+            CMAKE_MAJOR=`cmake --version | perl -ne '@l=split(" ",$_);@m=split("\\.",@l[2]);print @m[0];'`
+            CMAKE_MINOR=`cmake --version | perl -ne '@l=split(" ",$_);@m=split("\\.",@l[2]);@n=split("-",@m[1]);print @n[0];'`
+            if [[ $CMAKE_MAJOR -ge 3 ]]; then
+                CMAKE_OK="yes"
+            elif [[ $CMAKE_MAJOR -ge 2 && $CMAKE_MINOR -ge 9 ]]; then
+                CMAKE_OK="yes"
+            fi
+        fi
+        if [[ "$CMAKE_OK" == "no" ]]; then
+            echo "Building CMake from scratch."
+            if [ -d $CMAKEDIR ]; then
+                # rm -rf $CMAKEDIR
+                echo "Assuming CMake is already built locally..."
+            else
+                getcode $CMAKESRC $CMAKE_URL
+                mypush $CMAKEDIR
+                exec_package_comm "./bootstrap" "log_${BUILDSTARTTIME}.bstrap"
+                exec_package_comm "$MAKE" "log_${BUILDSTARTTIME}.make"
+                mypop
+            fi
+            mypush $CMAKEDIR/bin
+            CMAKEBINDIR=`pwd`
+            PATH=${CMAKEBINDIR}:$PATH
+            mypop
+            echo "export CMAKEBINDIR=`pwd`" >> $ENVFILE
+            echo "export PATH=${CMAKEBINDIR}:\$PATH" >> $ENVFILE
+            echo "Finished installing CMake..."
+        fi
     fi
 
     mybr
@@ -353,6 +395,9 @@ dobuild()
         echo "Using pre-built GSL..."
     fi
     if [ "$ADD_GSL_ENV" == "yes" ]; then
+        mypush gsl
+        GSL_INSTALL_DIR=`pwd`
+        mypop
         mypush gsl/lib
         GSLLIB=`pwd`
         mypop
@@ -386,24 +431,41 @@ dobuild()
                 git checkout -b ${ROOTTAG} ${ROOTTAG}
             fi
             echo "Configuring in $PWD..."
-            PYTHIASTRING=""
-            if [ $PYTHIAVER -eq 6 ]; then
-                PYTHIASTRING="--enable-pythia6 --with-pythia6-libdir=$PYTHIALIBDIR"
-            elif [ $PYTHIAVER -eq 8 ]; then
-                PYTHIASTRING="--enable-pythia8 --with-pythia8-libdir=$PYTHIALIBDIR --with-pythia8-incdir=$PYTHIAINCDIR"
+            if [ "$USE_CMAKE_FOR_ROOT" == "yes" ]; then
+                mkdir ../build_root
+                mypush ../build_root/
+                ROOT_BUILD_TYPE="Optimized"
+                if [ "$DEBUG" == "yes" ]; then
+                    ROOT_BUILD_TYPE="Debug"
+                fi
+                cmake -DCMAKE_BUILD_TYPE=$ROOT_BUILD_TYPE \
+                    -Dcxx11=OFF -Dgdml=ON -Dminuit2=ON -Dgsl_shared=ON \
+                    -DPYTHIA6_LIBRARY=$PYTHIALIBDIR/libPythia6.so \
+                    -DGSL_DIR=$GSS_INSTALL_DIR \
+                    -DGSL_CONFIG_EXECUTABLE=$GSL_INSTALL_DIR/bin/gsl-config \
+                    ../root > log_${BUILDSTARTTIME}.config
+                cmake --build . > log_${BUILDSTARTTIME}.make
+                mypop
             else
-                badpythia
-            fi
-            DEBUGFLAG=""
-            if [ "$DEBUG" == "yes" ]; then
-                DEBUGFLAG="--build=debug"
-            fi
-            exec_package_comm "$NICE ./configure linuxx8664gcc $DEBUGFLAG $PYTHIASTRING --enable-gdml --enable-gsl-shared --enable-mathmore --enable-minuit2 --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB" "log_${BUILDSTARTTIME}.config"
-            echo "Running make in $PWD..."
-            # nice $MAKE >& log_${BUILDSTARTTIME}.make
-            exec_package_comm "$MAKE" "log_${BUILDSTARTTIME}.make"
+                PYTHIASTRING=""
+                if [ $PYTHIAVER -eq 6 ]; then
+                    PYTHIASTRING="--enable-pythia6 --with-pythia6-libdir=$PYTHIALIBDIR"
+                elif [ $PYTHIAVER -eq 8 ]; then
+                    PYTHIASTRING="--enable-pythia8 --with-pythia8-libdir=$PYTHIALIBDIR --with-pythia8-incdir=$PYTHIAINCDIR"
+                else
+                    badpythia
+                fi
+                DEBUGFLAG=""
+                if [ "$DEBUG" == "yes" ]; then
+                    DEBUGFLAG="--build=debug"
+                fi
+                exec_package_comm "$NICE ./configure linuxx8664gcc $DEBUGFLAG $PYTHIASTRING --enable-gdml --enable-gsl-shared --enable-mathmore --enable-minuit2 --with-gsl-incdir=$GSLINC --with-gsl-libdir=$GSLLIB" "log_${BUILDSTARTTIME}.config"
+                echo "Running make in $PWD..."
+                # nice $MAKE >& log_${BUILDSTARTTIME}.make
+                exec_package_comm "$MAKE" "log_${BUILDSTARTTIME}.make"
+            fi   # endif USE_CMAKE_FOR_ROOT 
             echo "Finished ROOT..."
-            mypop
+            mypop  # after Git checkout
         else
             allreadybuilt "ROOT"
         fi
@@ -411,10 +473,20 @@ dobuild()
         echo "Using pre-built ROOT..."
     fi
     if [ "$ADD_ROOT_ENV" == "yes" ]; then
-        mypush root
-        ROOTSYS=`pwd`
-        echo "ROOTSYS is $ROOTSYS..."
-        mypop
+        if [ -d build_root ]; then
+            mypush build_root
+            ROOTSYS=`pwd`
+            echo "ROOTSYS is $ROOTSYS..."
+            mypop
+        elif [ -d root ]; then
+            mypush root
+            ROOTSYS=`pwd`
+            echo "ROOTSYS is $ROOTSYS..."
+            mypop
+        else
+            echo "Error! Can't figure out how to set ROOTSYS!"
+            exit 1
+        fi
         echo "export ROOTSYS=$ROOTSYS" >> $ENVFILE
         echo "export PATH=${ROOTSYS}/bin:\$PATH" >> $ENVFILE
         echo "export LD_LIBRARY_PATH=${ROOTSYS}/lib:\$LD_LIBRARY_PATH" >> $ENVFILE
@@ -626,6 +698,9 @@ do
             ;;
         --no-roomu)
             BUILD_ROOMU="no"
+            ;;
+        --no-cmake)
+            USE_CMAKE_FOR_ROOT="no"
             ;;
         *)    # Unknown option
 
