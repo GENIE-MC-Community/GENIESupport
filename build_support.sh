@@ -65,10 +65,10 @@ DEBUG="no"
 BUILD_PYTHIA="yes"
 BUILD_GSL="yes"
 BUILD_ROOT="yes"
-BUILD_LOG4CPP="no"
-BUILD_LHAPDF="no"
-GET_PDFS="no"     # for lhapdf
-BUILD_ROOMU="no"
+BUILD_LOG4CPP="yes"
+BUILD_LHAPDF="yes"
+GET_PDFS="yes"     # for lhapdf
+BUILD_ROOMU="yes"
 
 ADD_PYTHIA_ENV=$BUILD_PYTHIA
 ADD_GSL_ENV=$BUILD_GSL
