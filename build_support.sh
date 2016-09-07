@@ -434,7 +434,7 @@ dobuild()
             if [ "$USE_CMAKE_FOR_ROOT" == "yes" ]; then
                 mkdir ../build_root
                 mypush ../build_root/
-                ROOT_BUILD_TYPE="Optimized"
+                ROOT_BUILD_TYPE="Release"
                 if [ "$DEBUG" == "yes" ]; then
                     ROOT_BUILD_TYPE="Debug"
                 fi
