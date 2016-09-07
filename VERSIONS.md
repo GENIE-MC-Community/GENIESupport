@@ -6,14 +6,18 @@ When first checking out this package, you will have the `HEAD` version of the
 `master` branch. Get a specific tagged release by checking out the tag into a
 branch like so:
 
-    git checkout -b R-2_10_10.0-br R-2_10_10.0
+    git checkout -b R-2_11_0.0-br R-2_11_0.0
 
-This will checkout _tag_ `R-2_10_10.0` into _branch_ `R-2_10_10.0-br`. You want
+This will checkout _tag_ `R-2_11_0.0` into _branch_ `R-2_11_0.0-br`. You want
 to checkout into a branch so you are not in a "detached `HEAD`" state.
 
 
 ## Current tags
 
+* `R-2_11_0.0`: Change ROOT build system to use CMake by default. We
+currently assume ROOT requires CMake 2.9 or greater and if it is not
+available in the PATH, we additionally check out and build CMake from
+scratch.
 * `R-2_10_10.0`: Enable minuit2 when building ROOT. Also turn off debug
 builds by default - users should now add a `-d/--debug` flag to build
 with debugging symbols (impacts Pythia8 (not used yet) and ROOT).

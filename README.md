@@ -1,12 +1,12 @@
 # READ ME FIRST!
 
 It is a good idea to use a tagged version of GENIESupport. The latest
-recommended tag is `R-2_10_10.0`. Use the following command to check
+recommended tag is `R-2_11_0.0`. Use the following command to check
 it out (and read below for more if you're really interested). After
 cloning the repository, `cd` into the `GENIESupport` directory and
 run:
 
-    git checkout -b R-2_10_10.0-br R-2_10_10.0
+    git checkout -b R-2_11_0.0-br R-2_11_0.0
 
 Run `./build_support.sh -h` to get a help menu. If you run into trouble,
 please consult the "Trouble-Shooting" section below. If you find a 
@@ -50,9 +50,9 @@ When first checking out this package, you will have the `HEAD` version of the
 `master` branch. Get a specific tagged release by checking out the tag into a
 branch like so:
 
-    git checkout -b R-2_10_10.0-br R-2_10_10.0
+    git checkout -b R-2_11_0.0-br R-2_11_0.0
 
-This will checkout _tag_ `R-2_10_10.0` into _branch_ `R-2_10_10.0-br`. You want to
+This will checkout _tag_ `R-2_11_0.0` into _branch_ `R-2_11_0.0-br`. You want to
 checkout into a branch so you are not in a "detached `HEAD`" state.
 
 ## Trouble-Shooting
