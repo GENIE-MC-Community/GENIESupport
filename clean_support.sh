@@ -52,21 +52,38 @@ fi
 
 echo "Cleaning env setup file..."
 rm -f  environment_setup.sh
+
 echo "Cleaning GSL..."
 rm -rf gsl
+
 echo "Cleaning HepMC..."
 rm -rf hepmc
+
 echo "Cleaning boost..."
 rm -rf boost
+
 echo "Cleaning LHAPDF..."
 rm -rf lhapdf
+
 echo "Cleaning ROOT..."
-rm -rf root
+if [ -d root ]; then
+    rm -rf root
+fi
+if [ -d build_root ]; then
+    rm -rf build_root
+fi
+
 echo "Cleaning log4cpp..."
 rm -rf log4cpp
+
 echo "Cleaning Pythia6..."
 rm -rf pythia6
+
 echo "Cleaning Pythia8..."
 rm -rf pythia8*
+
 echo "Cleaning RooMUHistos..."
 rm -rf RooMUHistos*
+
+echo "Cleaning CMake..."
+rm -rf cmake-*
