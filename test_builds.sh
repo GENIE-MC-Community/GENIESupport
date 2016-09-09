@@ -47,8 +47,12 @@ test()
     PYTHIAV=$1
     ROOTV=$2
     HTTPFLAG=""
+    DEBUGFLAG=""
     if [[ $# > 2 ]]; then
         HTTPFLAG=$3
+    fi
+    if [[ $# > 3 ]]; then
+        DEBUGFLAG=$3
     fi
     echo "START TEST----------------------------------------------------------" \
         | tee -a $TESTBUILDSLOG
@@ -74,6 +78,9 @@ warn_the_user
 init_logs
 
 test 6 v5-34-24 -s
+teardown
+
+test 6 v5-34-24 -s -d
 teardown
 
 test 8 v5-34-24 -s
