@@ -131,10 +131,11 @@ getcode()
         mv -v $1 $ARCHIVE
     else
         echo "Downloading code from the internet..."
+        # TODO - remove `--no-check-certificate` when we stop building on SLF5
         if [ $# -eq 2 ]; then
-            $WGET $2/$1 >& $OUTDEST
+            $WGET --no-check-certificate $2/$1 >& $OUTDEST
         elif [ $# -eq 3 ]; then
-            $WGET $2/$1/$3  >& $OUTDEST 
+            $WGET --no-check-certificate $2/$1/$3  >& $OUTDEST 
         fi
         tar -xvzf $1 >& /dev/null
         mv -v $1 $ARCHIVE
