@@ -120,18 +120,21 @@ mymkarch()
 
 getcode()
 {
+    OUTDEST="/dev/null"
+    if [[ $VERBOSE = 1 ]]; then
+        OUTDEST="$1_get.log"
+    fi
     if [ -f $ARCHIVE/$1 ]; then
         echo "Retrieving code from archive..."
         mv -v $ARCHIVE/$1 .
-        tar -xvzf $1 >& /dev/null
+        tar -xvzf $1 >& $OUTDEST
         mv -v $1 $ARCHIVE
     else
         echo "Downloading code from the internet..."
         if [ $# -eq 2 ]; then
-            $WGET $2/$1 >& /dev/null
+            $WGET $2/$1 >& $OUTDEST
         elif [ $# -eq 3 ]; then
-            $WGET $2/$1/$3 
-            # $WGET $2/$1/$3 >& /dev/null  # for boost, basically
+            $WGET $2/$1/$3  >& $OUTDEST 
         fi
         tar -xvzf $1 >& /dev/null
         mv -v $1 $ARCHIVE
