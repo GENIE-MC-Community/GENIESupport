@@ -36,7 +36,7 @@ PDFLIST="GRV98lo.LHgrid GRV98nlo.LHgrid"
 # what are the names of the code archives? we get ROOT
 # from CERN's Git repos. log4cpp is "special" because
 # we can't curl it (I think - maybe someone can).
-PYTHIASRC=pythia8183.tgz          # only if we use Pythia8.
+PYTHIASRC=pythia8226.tgz          # only if we use Pythia8.
 GSLSRC=gsl-1.16.tar.gz
 ROOTTAG="v5-34-36"
 LOG4CPPSRC=log4cpp-1.1.1.tar.gz       
@@ -321,8 +321,8 @@ dobuild()
             mypush $PYTHIADIR/xmldoc
             PYTHIA8DATA=`pwd`
             mypop
-            echo "Pythia8 lib dir is $PYTHIALIBDIR..."
-            echo "export PYTHIA8=$PYTHIALIBDIR" >> $ENVFILE
+            echo "export PYTHIA8=$PYTHIADIR" >> $ENVFILE
+            echo "export PYTHIA8_LIB=$PYTHIALIBDIR" >> $ENVFILE
             echo "export PYTHIA8DATA=$PYTHIA8DATA" >> $ENVFILE
             echo "export PYTHIA8_INC=$PYTHIAINCDIR" >> $ENVFILE
             echo "export LD_LIBRARY_PATH=${PYTHIALIBDIR}:\$LD_LIBRARY_PATH" >> $ENVFILE
@@ -442,9 +442,14 @@ dobuild()
                 if [ "$DEBUG" == "yes" ]; then
                     ROOT_BUILD_TYPE="Debug"
                 fi
+                PYTHIASTRING=""
+                # Supposedly, we don't need to configure ROOT for Pythia 8 with the latest GENIE
+                if [ $PYTHIAVER -eq 6 ]; then
+                    PYTHIASTRING="-DPYTHIA6_LIBRARY=$PYTHIALIBDIR/libPythia6.so"
+                fi
                 cmake -DCMAKE_BUILD_TYPE=$ROOT_BUILD_TYPE \
                     -Dcxx11=OFF -Dgdml=ON -Dminuit2=ON -Dgsl_shared=ON \
-                    -DPYTHIA6_LIBRARY=$PYTHIALIBDIR/libPythia6.so \
+                    ${PYTHIASTRING} \
                     -DGSL_DIR=$GSS_INSTALL_DIR \
                     -DGSL_CONFIG_EXECUTABLE=$GSL_INSTALL_DIR/bin/gsl-config \
                     ../root > log_${BUILDSTARTTIME}.config
@@ -452,12 +457,9 @@ dobuild()
                 mypop
             else
                 PYTHIASTRING=""
+                # Supposedly, we don't need to configure ROOT for Pythia 8 with the latest GENIE
                 if [ $PYTHIAVER -eq 6 ]; then
                     PYTHIASTRING="--enable-pythia6 --with-pythia6-libdir=$PYTHIALIBDIR"
-                elif [ $PYTHIAVER -eq 8 ]; then
-                    PYTHIASTRING="--enable-pythia8 --with-pythia8-libdir=$PYTHIALIBDIR --with-pythia8-incdir=$PYTHIAINCDIR"
-                else
-                    badpythia
                 fi
                 DEBUGFLAG=""
                 if [ "$DEBUG" == "yes" ]; then
