@@ -408,11 +408,16 @@ dobuild()
         mypush gsl/include
         GSLINC=`pwd`
         mypop
+        mypush gsl/bin
+        GSLBIN=`pwd`
+        mypop
         echo "GSL lib dir is $GSLLIB..."
         echo "GSL inc dir is $GSLINC..."
+        echo "GSL bin dir is $GSLBIN..."
         echo "export GSLLIB=$GSLLIB" >> $ENVFILE
         echo "export GSLINC=$GSLINC" >> $ENVFILE
         echo "export LD_LIBRARY_PATH=${GSLLIB}:\$LD_LIBRARY_PATH" >> $ENVFILE
+        echo "export PATH=${GSLBIN}:\$PATH" >> $ENVFILE
     fi
 
     mybr
